@@ -4,7 +4,7 @@ import 'package:sqflite/sqflite.dart';
 
 import '../data/fluxo_atendimento_repository.dart';
 import '../domain/fluxo_atendimento.dart';
-import 'fluxo_atendimento_placeholder_screen.dart';
+import 'quadro_atendimento_screen.dart';
 
 /// Tela 3 — Cadastro do Fluxo de Atendimento
 /// (`docs/controle-atendimento-prototype.md` §3.3,
@@ -103,7 +103,7 @@ class _CadastroFluxoScreenState extends State<CadastroFluxoScreen> {
 
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => FluxoAtendimentoPlaceholderScreen(fluxo: fluxo)),
+        MaterialPageRoute(builder: (_) => QuadroAtendimentoScreen(fluxo: fluxo)),
       );
     } on StateError catch (e) {
       if (!mounted) return;

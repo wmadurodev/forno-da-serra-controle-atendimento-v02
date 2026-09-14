@@ -5,8 +5,8 @@ import '../../../core/widgets/loading_view.dart';
 import '../data/fluxo_atendimento_repository.dart';
 import '../domain/fluxo_atendimento.dart';
 import 'cadastro_fluxo_screen.dart';
-import 'fluxo_atendimento_placeholder_screen.dart';
 import 'home_controller.dart';
+import 'quadro_atendimento_screen.dart';
 
 /// Tela 2 — Home (`docs/controle-atendimento-prototype.md` §3.2).
 class HomeScreen extends StatelessWidget {
@@ -76,7 +76,7 @@ class _HomeView extends StatelessWidget {
   void _onFluxoSelecionado(BuildContext context, FluxoAtendimento fluxo) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => FluxoAtendimentoPlaceholderScreen(fluxo: fluxo),
+        builder: (_) => QuadroAtendimentoScreen(fluxo: fluxo),
       ),
     );
   }

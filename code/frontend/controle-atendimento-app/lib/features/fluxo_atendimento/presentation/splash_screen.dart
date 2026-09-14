@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../data/fluxo_atendimento_repository.dart';
-import 'fluxo_atendimento_placeholder_screen.dart';
 import 'home_screen.dart';
+import 'quadro_atendimento_screen.dart';
 
 /// Tela 1 — Splash (`docs/controle-atendimento-functional.md` §5.1,
 /// `docs/controle-atendimento-prototype.md` §3.1).
@@ -30,7 +30,7 @@ class _SplashScreenState extends State<SplashScreen> {
     if (fluxoAberto != null) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => FluxoAtendimentoPlaceholderScreen(fluxo: fluxoAberto),
+          builder: (_) => QuadroAtendimentoScreen(fluxo: fluxoAberto),
         ),
       );
     } else {
