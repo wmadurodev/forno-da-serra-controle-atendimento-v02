@@ -19,6 +19,7 @@ class PedidoCard extends StatelessWidget {
     required this.onEditarCadastro,
     required this.onExecutar,
     required this.onEditarExecucao,
+    required this.onCancelar,
   });
 
   final Pedido pedido;
@@ -31,6 +32,7 @@ class PedidoCard extends StatelessWidget {
   final VoidCallback onEditarCadastro;
   final VoidCallback onExecutar;
   final VoidCallback onEditarExecucao;
+  final VoidCallback onCancelar;
 
   @override
   Widget build(BuildContext context) {
@@ -115,7 +117,7 @@ class PedidoCard extends StatelessWidget {
         botoes = [
           OutlinedButton(onPressed: onExecutar, child: const Text('Executar')),
           OutlinedButton(onPressed: onEditarCadastro, child: const Text('Editar')),
-          OutlinedButton(onPressed: () => _acaoFutura(context, 'Passo 7'), child: const Text('Cancelar')),
+          OutlinedButton(onPressed: onCancelar, child: const Text('Cancelar')),
         ];
       case PedidoStatus.emExecucao:
         botoes = [
@@ -124,7 +126,7 @@ class PedidoCard extends StatelessWidget {
           else
             OutlinedButton(onPressed: () => onRetirado(), child: const Text('Retirado')),
           OutlinedButton(onPressed: onEditarExecucao, child: const Text('Editar')),
-          OutlinedButton(onPressed: () => _acaoFutura(context, 'Passo 7'), child: const Text('Cancelar')),
+          OutlinedButton(onPressed: onCancelar, child: const Text('Cancelar')),
         ];
       case PedidoStatus.enviado:
         botoes = [
