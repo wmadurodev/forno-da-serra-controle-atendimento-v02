@@ -45,8 +45,8 @@ Decisões que não vêm da documentação funcional/não funcional, tomadas para
 | 4 | Cadastro de Pedido (Tela 5), integrado ao Kanban do Passo 3 | Passo 3 | **Concluído e validado** (2026-09-14) | `prompts-impl/passo-04-cadastro-pedido.md` |
 | 5 | Execução de Pedido (Tela 6), integrado ao Kanban do Passo 3 | Passos 3, 4 | **Concluído e validado** (2026-09-14) | `prompts-impl/passo-05-execucao-pedido.md` |
 | 6 | Edição de Pedido em Execução (Tela 9), integrado ao Kanban do Passo 3 | Passos 3, 5 | **Concluído e validado** (2026-09-14) | `prompts-impl/passo-06-edicao-pedido-execucao.md` |
-| 7 | Cancelamento de Pedido (Tela 7), integrado ao Kanban do Passo 3 | Passo 3 | **Em especificação** | `prompts-impl/passo-07-cancelamento-pedido.md` |
-| 8 | Devolução de Entrega (Tela 8), integrado ao Kanban do Passo 3 | Passos 3, 5 | Aguardando | — |
+| 7 | Cancelamento de Pedido (Tela 7), integrado ao Kanban do Passo 3 | Passo 3 | **Concluído e validado** (2026-09-14) | `prompts-impl/passo-07-cancelamento-pedido.md` |
+| 8 | Devolução de Entrega (Tela 8), integrado ao Kanban do Passo 3 | Passos 3, 5 | **Em especificação** | `prompts-impl/passo-08-devolucao-entrega.md` |
 
 > Numeração de telas conforme `docs/controle-atendimento-prototype.md` §1 (Telas 1–9).
 
@@ -67,5 +67,5 @@ Decisões que não vêm da documentação funcional/não funcional, tomadas para
 - **Passo 4:** concluído e validado em 2026-09-14.
 - **Passo 5:** concluído e validado em 2026-09-14.
 - **Passo 6:** concluído e validado em 2026-09-14.
-- **Passo 7:** em especificação — prompt criado em `prompts-impl/passo-07-cancelamento-pedido.md`, aguardando implementação e validação.
-- **Passo 8:** aguardando finalização e validação do Passo 7 para ser especificado.
+- **Passo 7:** concluído e validado em 2026-09-14.
+- **Passo 8:** em especificação — prompt criado em `prompts-impl/passo-08-devolucao-entrega.md`, aguardando implementação e validação. Último passo do plano.

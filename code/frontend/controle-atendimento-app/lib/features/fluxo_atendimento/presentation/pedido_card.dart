@@ -20,6 +20,7 @@ class PedidoCard extends StatelessWidget {
     required this.onExecutar,
     required this.onEditarExecucao,
     required this.onCancelar,
+    required this.onDevolvido,
   });
 
   final Pedido pedido;
@@ -33,6 +34,7 @@ class PedidoCard extends StatelessWidget {
   final VoidCallback onExecutar;
   final VoidCallback onEditarExecucao;
   final VoidCallback onCancelar;
+  final VoidCallback onDevolvido;
 
   @override
   Widget build(BuildContext context) {
@@ -131,7 +133,7 @@ class PedidoCard extends StatelessWidget {
       case PedidoStatus.enviado:
         botoes = [
           OutlinedButton(onPressed: () => onEntregue(), child: const Text('Entregue')),
-          OutlinedButton(onPressed: () => _acaoFutura(context, 'Passo 8'), child: const Text('Devolvido')),
+          OutlinedButton(onPressed: onDevolvido, child: const Text('Devolvido')),
         ];
       case PedidoStatus.retiradoNoBalcao:
       case PedidoStatus.entregue:
@@ -142,12 +144,6 @@ class PedidoCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 8),
       child: Wrap(spacing: 8, runSpacing: 8, children: botoes),
-    );
-  }
-
-  void _acaoFutura(BuildContext context, String passo) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Disponível a partir do $passo')),
     );
   }
 

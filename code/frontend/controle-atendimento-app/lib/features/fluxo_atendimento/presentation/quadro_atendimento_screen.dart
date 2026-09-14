@@ -6,6 +6,7 @@ import '../../pedido/data/pedido_repository.dart';
 import '../../pedido/domain/pedido.dart';
 import '../../pedido/presentation/cadastro_pedido_screen.dart';
 import '../../pedido/presentation/cancelamento_pedido_screen.dart';
+import '../../pedido/presentation/devolucao_entrega_screen.dart';
 import '../../pedido/presentation/edicao_pedido_execucao_screen.dart';
 import '../../pedido/presentation/execucao_pedido_screen.dart';
 import '../domain/fluxo_atendimento.dart';
@@ -85,6 +86,7 @@ class _QuadroView extends StatelessWidget {
                       onAbrirExecucaoPedido: (context, pedido) => _abrirExecucaoPedido(context, controller, pedido),
                       onAbrirEdicaoExecucao: (context, pedido) => _abrirEdicaoExecucao(context, controller, pedido),
                       onAbrirCancelamento: (context, pedido) => _abrirCancelamento(context, controller, pedido),
+                      onAbrirDevolucao: (context, pedido) => _abrirDevolucao(context, controller, pedido),
                     ),
                   ),
                 )
@@ -147,6 +149,17 @@ class _QuadroView extends StatelessWidget {
     );
     await controller.load();
   }
+
+  Future<void> _abrirDevolucao(
+    BuildContext context,
+    QuadroAtendimentoController controller,
+    Pedido pedido,
+  ) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => DevolucaoEntregaScreen(pedido: pedido)),
+    );
+    await controller.load();
+  }
 }
 
 class _KanbanColuna extends StatelessWidget {
@@ -159,6 +172,7 @@ class _KanbanColuna extends StatelessWidget {
     required this.onAbrirExecucaoPedido,
     required this.onAbrirEdicaoExecucao,
     required this.onAbrirCancelamento,
+    required this.onAbrirDevolucao,
   });
 
   final PedidoStatus status;
@@ -169,6 +183,7 @@ class _KanbanColuna extends StatelessWidget {
   final Future<void> Function(BuildContext context, Pedido pedido) onAbrirExecucaoPedido;
   final Future<void> Function(BuildContext context, Pedido pedido) onAbrirEdicaoExecucao;
   final Future<void> Function(BuildContext context, Pedido pedido) onAbrirCancelamento;
+  final Future<void> Function(BuildContext context, Pedido pedido) onAbrirDevolucao;
 
   @override
   Widget build(BuildContext context) {
@@ -212,6 +227,7 @@ class _KanbanColuna extends StatelessWidget {
                         onExecutar: () => onAbrirExecucaoPedido(context, pedido),
                         onEditarExecucao: () => onAbrirEdicaoExecucao(context, pedido),
                         onCancelar: () => onAbrirCancelamento(context, pedido),
+                        onDevolvido: () => onAbrirDevolucao(context, pedido),
                       );
                     },
                   ),
