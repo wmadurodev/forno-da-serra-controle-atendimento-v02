@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import '../../pedido/domain/pedido.dart';
@@ -15,6 +17,7 @@ class PedidoCard extends StatelessWidget {
     required this.onEntregue,
     required this.onAtendimento,
     required this.onEditarCadastro,
+    required this.onExecutar,
   });
 
   final Pedido pedido;
@@ -25,6 +28,7 @@ class PedidoCard extends StatelessWidget {
   final Future<void> Function() onEntregue;
   final VoidCallback onAtendimento;
   final VoidCallback onEditarCadastro;
+  final VoidCallback onExecutar;
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +82,17 @@ class PedidoCard extends StatelessWidget {
         add('Observação', pedido.observacao);
         add('Mesa', pedido.mesa);
         add('Restrições', pedido.restricoes);
-        add('Imagem', pedido.imagemPedidoRef);
+        if (pedido.imagemPedidoRef != null) {
+          widgets.add(
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: Image.file(File(pedido.imagemPedidoRef!), height: 120, fit: BoxFit.cover),
+              ),
+            ),
+          );
+        }
         if (pedido.status == PedidoStatus.devolvido) add('Motivo da Devolução', pedido.motivoDevolucao);
     }
 
@@ -97,7 +111,7 @@ class PedidoCard extends StatelessWidget {
         ];
       case PedidoStatus.emAtendimento:
         botoes = [
-          OutlinedButton(onPressed: () => _acaoFutura(context, 'Passo 5'), child: const Text('Executar')),
+          OutlinedButton(onPressed: onExecutar, child: const Text('Executar')),
           OutlinedButton(onPressed: onEditarCadastro, child: const Text('Editar')),
           OutlinedButton(onPressed: () => _acaoFutura(context, 'Passo 7'), child: const Text('Cancelar')),
         ];
