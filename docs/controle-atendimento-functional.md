@@ -134,4 +134,4 @@ Campos do grupo **Execução** (`mesa`, `imagem_pedido_ref`, `valor_pagamento`, 
 ## 10. Fora de Escopo deste Documento
 
 - Requisitos não funcionais (performance, segurança, disponibilidade): ver `controle-atendimento-non-functional.md` (pendente de elaboração).
-- Layout de telas e protótipo de interface: ver `controle-atendimento-prototype.md` (pendente de elaboração).
+- Layout de telas e protótipo de interface: ver `controle-atendimento-prototype.md`.

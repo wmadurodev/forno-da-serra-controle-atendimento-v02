@@ -83,4 +83,4 @@ Resolve a pendência **DS-7** de `controle-atendimento-data-structure.md` à luz
 
 - Regras de negócio, máquina de estados e validações funcionais: ver `controle-atendimento-functional.md`.
 - Entidades, atributos e enumerações de domínio: ver `controle-atendimento-data-structure.md`.
-- Layout de telas e protótipo de interface: ver `controle-atendimento-prototype.md` (pendente de elaboração).
+- Layout de telas e protótipo de interface: ver `controle-atendimento-prototype.md`.
