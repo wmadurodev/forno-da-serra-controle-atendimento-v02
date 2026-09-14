@@ -53,7 +53,7 @@ O objetivo do sistema é controlar o fluxo de atendimento de pedidos de um estab
 
 - Dentro de um fluxo de atendimento selecionado, o usuário pode buscar pedidos pelos seguintes critérios:
   - Nome do cliente (`nome_cliente`)
-  - Identificador do pedido (ver **FN-2**)
+  - Identificador do pedido (ver **FN-2**, confirmado)
   - Número da mesa (`mesa`)
   - Endereço de entrega (`endereco`)
 
@@ -87,7 +87,7 @@ stateDiagram-v2
 | 3.1 | Novo Pedido | *(inexistente)* | Criar pedido informando todos os dados de cadastro | Fluxo de Atendimento aberto | `identificador` + dados de cadastro completos (§7) | `em_atendimento` |
 | 3.2 | Iniciar Pedido | `aguardando_atendimento` | Abrir tela de cadastro, completar dados e salvar | Fluxo de Atendimento aberto | dados de cadastro completos (§7) | `em_atendimento` |
 | 3.3 | Excluir Pedido | `aguardando_atendimento` | Excluir pedido | Fluxo de Atendimento aberto | — | registro removido definitivamente (hard delete — **FN-6**, confirmado) |
-| 3.4 | Executar Pedido | `em_atendimento` | Informar dados de execução e salvar | Fluxo de Atendimento aberto | `mesa` (obrigatório), `imagem_pedido_ref` (obrigatório), `valor_pix` (opcional), `restricoes` (opcional) | `em_execucao` |
+| 3.4 | Executar Pedido | `em_atendimento` | Informar dados de execução e salvar | Fluxo de Atendimento aberto | `mesa` (obrigatório), `imagem_pedido_ref` (obrigatório), `valor_pagamento` (opcional), `restricoes` (opcional) | `em_execucao` |
 | 3.5 | Cancelar Pedido | `em_atendimento` ou `em_execucao` | Cancelar pedido | Fluxo de Atendimento aberto | `motivo_cancelamento` (opcional) | mesmo `status`; `cancelado = true` |
 | 3.6 | Pedido Retirado no Balcão | `em_execucao` | Marcar retirada no balcão | `tipo_entrega = retirada_balcao` | — | `retirado_no_balcao` |
 | 3.7 | Pedido Enviado | `em_execucao` | Marcar envio | `tipo_entrega = delivery` | — | `enviado` |
@@ -104,7 +104,7 @@ A origem define a transição para `em_atendimento` como "todos os dados preench
 - `endereco` — obrigatório **somente se** `tipo_entrega = delivery` (ver **DS-4**)
 - `observacao` — opcional (ver **DS-5**)
 
-Campos do grupo **Execução** (`mesa`, `imagem_pedido_ref`, `valor_pix`, `restricoes`) e do grupo **Cancelamento/Devolução** (`motivo_cancelamento`, `motivo_devolucao`) **não** fazem parte deste critério — eles são exigidos em transições posteriores específicas (§6.2).
+Campos do grupo **Execução** (`mesa`, `imagem_pedido_ref`, `valor_pagamento`, `restricoes`) e do grupo **Cancelamento/Devolução** (`motivo_cancelamento`, `motivo_devolucao`) **não** fazem parte deste critério — eles são exigidos em transições posteriores específicas (§6.2).
 
 ## 8. Regras de Validação Funcional (resumo)
 
@@ -113,7 +113,7 @@ Campos do grupo **Execução** (`mesa`, `imagem_pedido_ref`, `valor_pix`, `restr
 - As transições `retirado_no_balcao`, `enviado`, `entregue` e `devolvido` são condicionadas ao valor de `tipo_entrega` (balcão vs. delivery), conforme tabela §6.2.
 - `motivo_devolucao` é obrigatório apenas na transição `enviado → devolvido`; a interface pode sugerir os valores "Não encontrado" e "Devolvido pelo cliente", mas deve aceitar texto livre.
 - `motivo_cancelamento` é sempre opcional.
-- Os campos de Execução (`mesa`, `valor_pix`, `restricoes`, `imagem_pedido_ref`) podem ser alterados mesmo após o pedido entrar em `em_execucao`, enquanto o Fluxo de Atendimento permanecer `aberto` (**FN-4**, confirmado).
+- Os campos de Execução (`mesa`, `valor_pagamento`, `restricoes`, `imagem_pedido_ref`) podem ser alterados mesmo após o pedido entrar em `em_execucao`, enquanto o Fluxo de Atendimento permanecer `aberto` (**FN-4**, confirmado).
 - "Excluir Pedido" é exclusão definitiva (hard delete): o registro é removido do banco, sem manter histórico (**FN-6**, confirmado).
 - Um Pedido com `cancelado = true` continua visível nas buscas (§5.5) e listagens do fluxo; não há operação de "descancelar" (**FN-7**, confirmado).
 - A máquina de estados do Pedido (§6) é estritamente progressiva: não há transição de retrocesso de `status` (**FN-8**, confirmado).
@@ -125,7 +125,7 @@ Campos do grupo **Execução** (`mesa`, `imagem_pedido_ref`, `valor_pix`, `restr
 | FN-1 *(confirmado)* | A funcionalidade 3.9 da origem descreve o destino do pedido como "não entregue", mas o atributo `status` do Pedido enumera o valor `devolvido` (sem "não entregue" na lista). | **Confirmado pelo negócio:** não existe status "não entregue". O valor correto e definitivo é `devolvido` (ver **DS-8**). |
 | FN-2 *(confirmado)* | A busca de pedidos (§5.5, item 2.4 da origem) cita "identificador do cliente", mas não existe atributo com esse nome no Pedido — apenas `identificador` (do pedido) e `nome_cliente`. | **Confirmado pelo negócio:** trata-se do `identificador` do Pedido. |
 | FN-3 *(confirmado)* | Não fica claro se o `identificador` do Fluxo de Atendimento pode ser alterado após a criação, ou somente no momento de criação. | **Confirmado pelo negócio:** o `identificador` pode ser alterado a qualquer momento enquanto o fluxo estiver `aberto`, não somente na criação (ver §5.2). |
-| FN-4 *(confirmado)* | Não há relato sobre se `mesa`, `valor_pix`, `restricoes` e `imagem_pedido_ref` podem ser alterados após o pedido entrar em `em_execucao`. | **Confirmado pelo negócio:** esses campos podem ser alterados após o pedido entrar em `em_execucao` (ver §8), respeitando a regra geral 3 (Fluxo de Atendimento aberto). |
+| FN-4 *(confirmado)* | Não há relato sobre se `mesa`, `valor_pagamento`, `restricoes` e `imagem_pedido_ref` podem ser alterados após o pedido entrar em `em_execucao`. | **Confirmado pelo negócio:** esses campos podem ser alterados após o pedido entrar em `em_execucao` (ver §8), respeitando a regra geral 3 (Fluxo de Atendimento aberto). |
 | FN-5 *(confirmado)* | Não há relato do comportamento esperado ao tentar abrir um novo Fluxo de Atendimento enquanto já existe um `aberto` (bloqueio silencioso, mensagem de erro, fechamento automático do anterior). | **Confirmado pelo negócio:** bloqueio com mensagem de erro ao usuário (consistente com a regra geral 1). |
 | FN-6 *(confirmado)* | Não fica claro se "Excluir Pedido" (3.3) é exclusão definitiva (hard delete) ou lógica (soft delete, mantendo histórico). | **Confirmado pelo negócio:** exclusão definitiva (hard delete) — o registro é removido, sem manter histórico. |
 | FN-7 *(confirmado)* | Não há relato sobre se um Pedido com `cancelado = true` continua aparecendo nas buscas (§5.5) e nas listagens do fluxo, nem se pode ser "descancelado". | **Confirmado pelo negócio:** o pedido cancelado continua aparecendo nas buscas e listagens, e não há reversão do cancelamento (não pode ser "descancelado"). |
