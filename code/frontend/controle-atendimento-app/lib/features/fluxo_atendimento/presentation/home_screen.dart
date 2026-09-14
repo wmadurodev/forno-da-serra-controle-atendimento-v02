@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/widgets/loading_view.dart';
 import '../data/fluxo_atendimento_repository.dart';
 import '../domain/fluxo_atendimento.dart';
+import 'cadastro_fluxo_screen.dart';
 import 'fluxo_atendimento_placeholder_screen.dart';
 import 'home_controller.dart';
 
@@ -64,10 +65,12 @@ class _HomeView extends StatelessWidget {
     );
   }
 
-  void _onNovoFluxo(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Disponível a partir do Passo 2')),
+  Future<void> _onNovoFluxo(BuildContext context) async {
+    final controller = context.read<HomeController>();
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const CadastroFluxoScreen()),
     );
+    await controller.load();
   }
 
   void _onFluxoSelecionado(BuildContext context, FluxoAtendimento fluxo) {

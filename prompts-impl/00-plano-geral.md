@@ -39,8 +39,8 @@ Decisões que não vêm da documentação funcional/não funcional, tomadas para
 
 | Passo | Nome | Depende de | Status | Prompt |
 |---|---|---|---|---|
-| 1 | Aplicação base, banco de dados, Splash e Home | — | **Em especificação** | `prompts-impl/passo-01-app-base-splash-home.md` |
-| 2 | Cadastro do Fluxo de Atendimento (Tela 3) | Passo 1 | Aguardando | — |
+| 1 | Aplicação base, banco de dados, Splash e Home | — | **Concluído e validado** (2026-09-14) | `prompts-impl/passo-01-app-base-splash-home.md` |
+| 2 | Cadastro do Fluxo de Atendimento (Tela 3) | Passo 1 | **Em especificação** | `prompts-impl/passo-02-cadastro-fluxo-atendimento.md` |
 | 3 | Execução do Fluxo de Atendimento — quadro Kanban (Tela 4) | Passos 1, 2 | Aguardando | — |
 | 4 | Cadastro de Pedido (Tela 5), integrado ao Kanban do Passo 3 | Passo 3 | Aguardando | — |
 | 5 | Execução de Pedido (Tela 6), integrado ao Kanban do Passo 3 | Passos 3, 4 | Aguardando | — |
@@ -61,5 +61,6 @@ Decisões que não vêm da documentação funcional/não funcional, tomadas para
 
 ## 6. Status Atual
 
-- **Passo 1:** em especificação — prompt criado em `prompts-impl/passo-01-app-base-splash-home.md`, aguardando implementação e validação.
-- **Passos 2 a 8:** aguardando finalização e validação do Passo 1 para serem especificados.
+- **Passo 1:** concluído e validado em 2026-09-14 — implementado em `code/frontend/controle-atendimento-app`, testado em dispositivo Android real.
+- **Passo 2:** em especificação — prompt criado em `prompts-impl/passo-02-cadastro-fluxo-atendimento.md`, aguardando implementação e validação.
+- **Passos 3 a 8:** aguardando finalização e validação do Passo 2 para serem especificados.
