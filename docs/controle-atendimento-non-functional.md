@@ -26,46 +26,32 @@ A aplicação será um **app mobile** desenvolvido em **Flutter**, operando **10
 
 ## 4. Modelo de Persistência (SQLite)
 
-Mapeamento técnico das entidades definidas em `controle-atendimento-data-structure.md` §2–§4 para tabelas SQLite. Este mapeamento é uma tradução direta dos tipos de negócio para tipos de coluna SQLite — não introduz nem altera nenhuma regra funcional.
+Este documento **não repete** a lista de entidades/atributos — a fonte única para nomes técnicos, tamanhos e obrigatoriedade de cada campo é `controle-atendimento-data-structure.md` §2 (Fluxo de Atendimento) e §3 (Pedido). Aqui está apenas a regra de tradução desses atributos para SQLite e as decisões específicas de persistência que a origem funcional não cobre.
 
-### 4.1 Tabela `fluxo_atendimento`
+### 4.1 Regra de Mapeamento de Tipos
 
-| Coluna | Tipo SQLite | Constraints | Origem (data-structure.md) |
-|---|---|---|---|
-| `identificador` | `TEXT` | `PRIMARY KEY` | §2, atributo `identificador` |
-| `status` | `TEXT` | `NOT NULL`, `CHECK (status IN ('aberto', 'fechado'))` | §2, atributo `status` / §4.1 |
+| Tipo de negócio (`data-structure.md`) | Tipo SQLite | Observações |
+|---|---|---|
+| Texto | `TEXT` | Tamanho máximo (ex.: "50 caracteres") não é imposto pelo SQLite (tipagem dinâmica); validação de tamanho é responsabilidade da camada de aplicação. |
+| Enumeração | `TEXT` + `CHECK (coluna IN (...))` | Valores fechados de cada enum vêm de `data-structure.md` §4 — não redefinidos aqui. |
+| Booleano | `INTEGER` | Convenção SQLite: `0` = false, `1` = true. |
+| Numérico monetário | `REAL` | Único caso: `valor_pix`. |
+| Referência → outra entidade | `TEXT` + `FOREIGN KEY` | Único caso: `fluxo_atendimento_id` → `fluxo_atendimento(identificador)`. |
+| Referência a imagem | `TEXT` | Caminho de arquivo local, não BLOB — ver §5. |
+| Identificador (chave de negócio) | `TEXT` + `PRIMARY KEY` | Aplica-se a `fluxo_atendimento.identificador` e `pedido.identificador`. |
 
-- A regra "no máximo um `aberto` simultaneamente" (§2, `controle-atendimento-data-structure.md`) é uma regra de **aplicação**, não expressável como `CHECK` de coluna — deve ser validada em código antes de qualquer `INSERT`/`UPDATE` que produza `status = 'aberto'`.
+### 4.2 Regras Estruturais
 
-### 4.2 Tabela `pedido`
-
-| Coluna | Tipo SQLite | Constraints | Origem (data-structure.md) |
-|---|---|---|---|
-| `identificador` | `TEXT` | `PRIMARY KEY` | §3, `identificador` |
-| `fluxo_atendimento_id` | `TEXT` | `NOT NULL`, `FOREIGN KEY → fluxo_atendimento(identificador)` | §3, `fluxo_atendimento_id` |
-| `status` | `TEXT` | `NOT NULL`, `CHECK (status IN (...))` — valores de §4.2 | §3, `status` |
-| `cancelado` | `INTEGER` | `NOT NULL DEFAULT 0` (booleano como `0`/`1`, convenção SQLite) | §3, `cancelado` |
-| `nome_cliente` | `TEXT` | `NULL` (obrigatório apenas na transição para `em_atendimento`, validado em aplicação) | §3, `nome_cliente` |
-| `tipo_entrega` | `TEXT` | `NULL`, `CHECK (tipo_entrega IN ('delivery', 'retirada_balcao'))` | §3, `tipo_entrega` |
-| `tipo_pagamento` | `TEXT` | `NULL`, `CHECK (tipo_pagamento IN ('pix', 'cartao', 'dinheiro'))` | §3, `tipo_pagamento` |
-| `endereco` | `TEXT` | `NULL` (obrigatoriedade condicional, validada em aplicação — DS-4) | §3, `endereco` |
-| `observacao` | `TEXT` | `NULL` | §3, `observacao` |
-| `restricoes` | `TEXT` | `NULL` | §3, `restricoes` |
-| `valor_pix` | `REAL` | `NULL` | §3, `valor_pix` |
-| `mesa` | `TEXT` | `NULL` (obrigatório ao executar, validado em aplicação) | §3, `mesa` |
-| `imagem_pedido_ref` | `TEXT` | `NULL` (obrigatório ao executar, validado em aplicação) — ver §5 deste documento quanto ao formato | §3, `imagem_pedido_ref` |
-| `motivo_cancelamento` | `TEXT` | `NULL` | §3, `motivo_cancelamento` |
-| `motivo_devolucao` | `TEXT` | `NULL` (obrigatório na transição `enviado → devolvido`, validado em aplicação) | §3, `motivo_devolucao` |
-
-- Todos os campos "obrigatórios condicionalmente" (marcados como `Condicional` ou "Sim, ao executar/devolver" em `controle-atendimento-data-structure.md` §3) são mapeados como `NULL`-áveis no schema SQLite: a obrigatoriedade depende do estado do Pedido (máquina de estados) e **não pode ser expressa como constraint estática de coluna** — deve ser validada pela camada de aplicação antes de cada transição, conforme `controle-atendimento-functional.md` §6.2.
-- Enumerações (`status` de ambas as tabelas, `tipo_entrega`, `tipo_pagamento`) são armazenadas como `TEXT` com `CHECK` explícito, refletindo os valores fechados definidos em `controle-atendimento-data-structure.md` §4. Não são usadas tabelas de domínio separadas (over-engineering desnecessário para um app local, single-user).
+- Uma tabela por entidade (`fluxo_atendimento`, `pedido`), sem tabelas de domínio separadas para as enumerações — resolvidas via `CHECK`, conforme §4.1. Introduzir tabelas de domínio seria over-engineering desnecessário para um app local, single-user.
+- Todo atributo listado em `data-structure.md` §3 como `Condicional` ou "Sim, ao executar/devolver" (obrigatoriedade depende do estado do Pedido) é mapeado como coluna **nullable** — a obrigatoriedade não é uma constraint estática de coluna, e sim uma regra de transição de estado (`controle-atendimento-functional.md` §6.2), validada pela camada de aplicação antes de cada escrita.
+- A regra "no máximo um Fluxo de Atendimento com `status = aberto`" (`data-structure.md` §2) também não é expressável como `CHECK`/`UNIQUE` de coluna — é validada em aplicação antes de qualquer `INSERT`/`UPDATE` que produza esse estado.
 
 ### 4.3 Índices sugeridos
 
 Para suportar a busca de pedidos descrita em `controle-atendimento-functional.md` §5.5 (nome do cliente, identificador, mesa, endereço) dentro de um fluxo de atendimento:
 
 - Índice em `pedido(fluxo_atendimento_id)` — toda busca ocorre no escopo de um fluxo selecionado.
-- Índices adicionais em `nome_cliente`, `mesa` são opcionais e dependem do volume real de dados (não especificado na origem — ver **NF-4**).
+- Índices adicionais nos demais campos de busca são opcionais e dependem do volume real de dados (não especificado na origem — ver **NF-4**).
 
 ## 5. Armazenamento da Imagem do Pedido
 
