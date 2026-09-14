@@ -45,7 +45,7 @@ erDiagram
 
 | Atributo (negócio) | Nome técnico | Tipo | Tamanho/Domínio | Obrigatório | Default | Observações |
 |---|---|---|---|---|---|---|
-| Identificador | `identificador` | Texto | 15 caracteres | Sim | Data corrente | Chave de negócio. Editável pelo usuário no momento da criação. Formato exato da data não definido na origem — ver **DS-1**. |
+| Identificador | `identificador` | Texto | 15 caracteres | Sim | Data corrente | Chave de negócio. Editável pelo usuário a qualquer momento enquanto o fluxo estiver `aberto` (confirmado, ver `controle-atendimento-functional.md` **FN-3**). Formato exato da data não definido na origem — ver **DS-1**. |
 | Status | `status` | Enumeração | `aberto`, `fechado` (§4.1) | Sim | `aberto` | Transições descritas em `controle-atendimento-functional.md` §5. |
 
 **Regra de unicidade:** deve existir no máximo um registro com `status = aberto` em todo o sistema (validação de aplicação, não é uma restrição de coluna).
@@ -89,7 +89,7 @@ erDiagram
 | `retirado_no_balcao` | Entrega concluída — retirada no balcão. |
 | `enviado` | Pedido saiu para entrega (delivery). |
 | `entregue` | Entrega concluída — delivery. |
-| `devolvido` | Pedido não entregue / retornado (delivery). Nomenclatura divergente na origem — ver **DS-8**. |
+| `devolvido` | Pedido retornado, não entregue ao cliente (delivery). Valor confirmado pelo negócio — ver **DS-8**. |
 
 ### 4.3 Tipo de Entrega
 
@@ -124,4 +124,4 @@ erDiagram
 | DS-5 | Obrigatoriedade de `observacao` para a transição a `em_atendimento`. | Tratada como opcional; a origem não a cita entre os dados de execução nem a marca como obrigatória. |
 | DS-6 | `valor_pix` é coletado na etapa de execução do pedido, e não no cadastro, mesmo quando o pagamento não é Pix. | Mantido conforme literalidade da origem; validar se deve ser condicionado a `tipo_pagamento = pix`. |
 | DS-7 | Formato de armazenamento/upload da "Imagem do Pedido" (arquivo, URL, tabela auxiliar). | Não definido na origem; tratado como referência genérica a um recurso de imagem. |
-| DS-8 | O enum de Status do Pedido lista `devolvido`, mas a funcionalidade 3.9 (na origem) descreve o destino como "não entregue". | Adotado `devolvido` por ser o valor formalmente listado nos atributos; ver também **FN-1** em `controle-atendimento-functional.md`. |
+| DS-8 *(confirmado)* | O enum de Status do Pedido lista `devolvido`, mas a funcionalidade 3.9 (na origem) descreve o destino como "não entregue". | **Confirmado pelo negócio:** não existe status "não entregue". O valor correto e definitivo é `devolvido`; ver também **FN-1** em `controle-atendimento-functional.md`. |

@@ -112,7 +112,7 @@ Funcionalidades:
 
     3.9. Pedido Devolvido
 
-    Um pedido no estagio "enviado" podera passar para o estagio "nao entregue", caso o "tipo de entrga" seja "delivery". O usuario devera informar o motivo do retorno do pedido.
+    Um pedido no estagio "enviado" podera passar para o estagio "devolvido", caso o "tipo de entrga" seja "delivery". O usuario devera informar o motivo do retorno do pedido.
 
 
 
