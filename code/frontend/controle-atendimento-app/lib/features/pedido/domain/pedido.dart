@@ -173,24 +173,4 @@ class Pedido {
       'motivo_devolucao': motivoDevolucao,
     };
   }
-
-  Pedido copyWith({PedidoStatus? status}) {
-    return Pedido(
-      identificador: identificador,
-      fluxoAtendimentoId: fluxoAtendimentoId,
-      status: status ?? this.status,
-      cancelado: cancelado,
-      nomeCliente: nomeCliente,
-      tipoEntrega: tipoEntrega,
-      tipoPagamento: tipoPagamento,
-      endereco: endereco,
-      observacao: observacao,
-      restricoes: restricoes,
-      valorPagamento: valorPagamento,
-      mesa: mesa,
-      imagemPedidoRef: imagemPedidoRef,
-      motivoCancelamento: motivoCancelamento,
-      motivoDevolucao: motivoDevolucao,
-    );
-  }
 }

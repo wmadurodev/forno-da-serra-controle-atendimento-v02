@@ -13,6 +13,8 @@ class PedidoCard extends StatelessWidget {
     required this.onRetirado,
     required this.onEnviado,
     required this.onEntregue,
+    required this.onAtendimento,
+    required this.onEditarCadastro,
   });
 
   final Pedido pedido;
@@ -21,6 +23,8 @@ class PedidoCard extends StatelessWidget {
   final Future<void> Function() onRetirado;
   final Future<void> Function() onEnviado;
   final Future<void> Function() onEntregue;
+  final VoidCallback onAtendimento;
+  final VoidCallback onEditarCadastro;
 
   @override
   Widget build(BuildContext context) {
@@ -88,13 +92,13 @@ class PedidoCard extends StatelessWidget {
     switch (pedido.status) {
       case PedidoStatus.aguardandoAtendimento:
         botoes = [
-          OutlinedButton(onPressed: () => _acaoFutura(context, 'Passo 4'), child: const Text('Atendimento')),
+          OutlinedButton(onPressed: onAtendimento, child: const Text('Atendimento')),
           OutlinedButton(onPressed: () => _confirmarExclusao(context), child: const Text('Excluir')),
         ];
       case PedidoStatus.emAtendimento:
         botoes = [
           OutlinedButton(onPressed: () => _acaoFutura(context, 'Passo 5'), child: const Text('Executar')),
-          OutlinedButton(onPressed: () => _acaoFutura(context, 'Passo 4'), child: const Text('Editar')),
+          OutlinedButton(onPressed: onEditarCadastro, child: const Text('Editar')),
           OutlinedButton(onPressed: () => _acaoFutura(context, 'Passo 7'), child: const Text('Cancelar')),
         ];
       case PedidoStatus.emExecucao:

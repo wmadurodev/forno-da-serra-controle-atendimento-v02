@@ -1,3 +1,5 @@
+import 'package:sqflite/sqflite.dart';
+
 import '../../../core/database/app_database.dart';
 import '../../fluxo_atendimento/domain/fluxo_atendimento.dart';
 import '../domain/pedido.dart';
@@ -25,6 +27,24 @@ class PedidoRepository {
       orderBy: 'identificador ASC',
     );
     return rows.map(Pedido.fromMap).toList();
+  }
+
+  Future<Pedido?> buscarPorIdentificador(String fluxoAtendimentoId, String identificador) async {
+    final db = await _appDatabase.database;
+    final rows = await db.query(
+      _table,
+      where: 'fluxo_atendimento_id = ? AND identificador = ?',
+      whereArgs: [fluxoAtendimentoId, identificador],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return Pedido.fromMap(rows.first);
+  }
+
+  Future<void> salvar(Pedido pedido) async {
+    await _garantirFluxoAberto(pedido.fluxoAtendimentoId);
+    final db = await _appDatabase.database;
+    await db.insert(_table, pedido.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<void> excluir(Pedido pedido) async {

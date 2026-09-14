@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/widgets/loading_view.dart';
 import '../../pedido/data/pedido_repository.dart';
 import '../../pedido/domain/pedido.dart';
+import '../../pedido/presentation/cadastro_pedido_screen.dart';
 import '../domain/fluxo_atendimento.dart';
 import 'pedido_card.dart';
 import 'quadro_atendimento_controller.dart';
@@ -46,7 +47,7 @@ class _QuadroView extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.add),
               tooltip: 'Novo Pedido',
-              onPressed: () => _snack(context, 'Disponível a partir do Passo 4'),
+              onPressed: () => _abrirCadastroPedido(context, controller),
             ),
           IconButton(
             icon: const Icon(Icons.search),
@@ -76,6 +77,8 @@ class _QuadroView extends StatelessWidget {
                       pedidos: controller.pedidosDe(status),
                       somenteLeitura: _somenteLeitura,
                       controller: controller,
+                      onAbrirCadastroPedido: (context, pedidoExistente) =>
+                          _abrirCadastroPedido(context, controller, pedidoExistente: pedidoExistente),
                     ),
                   ),
                 )
@@ -89,6 +92,22 @@ class _QuadroView extends StatelessWidget {
   void _snack(BuildContext context, String mensagem) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(mensagem)));
   }
+
+  Future<void> _abrirCadastroPedido(
+    BuildContext context,
+    QuadroAtendimentoController controller, {
+    Pedido? pedidoExistente,
+  }) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CadastroPedidoScreen(
+          fluxoAtendimentoId: fluxo.identificador,
+          pedidoExistente: pedidoExistente,
+        ),
+      ),
+    );
+    await controller.load();
+  }
 }
 
 class _KanbanColuna extends StatelessWidget {
@@ -97,12 +116,14 @@ class _KanbanColuna extends StatelessWidget {
     required this.pedidos,
     required this.somenteLeitura,
     required this.controller,
+    required this.onAbrirCadastroPedido,
   });
 
   final PedidoStatus status;
   final List<Pedido> pedidos;
   final bool somenteLeitura;
   final QuadroAtendimentoController controller;
+  final Future<void> Function(BuildContext context, Pedido? pedidoExistente) onAbrirCadastroPedido;
 
   @override
   Widget build(BuildContext context) {
@@ -141,6 +162,8 @@ class _KanbanColuna extends StatelessWidget {
                           context,
                           () => controller.atualizarStatus(pedido, PedidoStatus.entregue),
                         ),
+                        onAtendimento: () => onAbrirCadastroPedido(context, pedido),
+                        onEditarCadastro: () => onAbrirCadastroPedido(context, pedido),
                       );
                     },
                   ),
