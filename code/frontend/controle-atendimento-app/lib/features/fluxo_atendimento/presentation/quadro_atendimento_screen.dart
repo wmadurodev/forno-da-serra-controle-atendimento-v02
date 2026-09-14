@@ -5,6 +5,7 @@ import '../../../core/widgets/loading_view.dart';
 import '../../pedido/data/pedido_repository.dart';
 import '../../pedido/domain/pedido.dart';
 import '../../pedido/presentation/cadastro_pedido_screen.dart';
+import '../../pedido/presentation/edicao_pedido_execucao_screen.dart';
 import '../../pedido/presentation/execucao_pedido_screen.dart';
 import '../domain/fluxo_atendimento.dart';
 import 'pedido_card.dart';
@@ -81,6 +82,7 @@ class _QuadroView extends StatelessWidget {
                       onAbrirCadastroPedido: (context, pedidoExistente) =>
                           _abrirCadastroPedido(context, controller, pedidoExistente: pedidoExistente),
                       onAbrirExecucaoPedido: (context, pedido) => _abrirExecucaoPedido(context, controller, pedido),
+                      onAbrirEdicaoExecucao: (context, pedido) => _abrirEdicaoExecucao(context, controller, pedido),
                     ),
                   ),
                 )
@@ -121,6 +123,17 @@ class _QuadroView extends StatelessWidget {
     );
     await controller.load();
   }
+
+  Future<void> _abrirEdicaoExecucao(
+    BuildContext context,
+    QuadroAtendimentoController controller,
+    Pedido pedido,
+  ) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => EdicaoPedidoExecucaoScreen(pedido: pedido)),
+    );
+    await controller.load();
+  }
 }
 
 class _KanbanColuna extends StatelessWidget {
@@ -131,6 +144,7 @@ class _KanbanColuna extends StatelessWidget {
     required this.controller,
     required this.onAbrirCadastroPedido,
     required this.onAbrirExecucaoPedido,
+    required this.onAbrirEdicaoExecucao,
   });
 
   final PedidoStatus status;
@@ -139,6 +153,7 @@ class _KanbanColuna extends StatelessWidget {
   final QuadroAtendimentoController controller;
   final Future<void> Function(BuildContext context, Pedido? pedidoExistente) onAbrirCadastroPedido;
   final Future<void> Function(BuildContext context, Pedido pedido) onAbrirExecucaoPedido;
+  final Future<void> Function(BuildContext context, Pedido pedido) onAbrirEdicaoExecucao;
 
   @override
   Widget build(BuildContext context) {
@@ -180,6 +195,7 @@ class _KanbanColuna extends StatelessWidget {
                         onAtendimento: () => onAbrirCadastroPedido(context, pedido),
                         onEditarCadastro: () => onAbrirCadastroPedido(context, pedido),
                         onExecutar: () => onAbrirExecucaoPedido(context, pedido),
+                        onEditarExecucao: () => onAbrirEdicaoExecucao(context, pedido),
                       );
                     },
                   ),

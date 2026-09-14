@@ -43,8 +43,8 @@ Decisões que não vêm da documentação funcional/não funcional, tomadas para
 | 2 | Cadastro do Fluxo de Atendimento (Tela 3) | Passo 1 | **Concluído e validado** (2026-09-14) | `prompts-impl/passo-02-cadastro-fluxo-atendimento.md` |
 | 3 | Execução do Fluxo de Atendimento — quadro Kanban (Tela 4) | Passos 1, 2 | **Concluído e validado** (2026-09-14) | `prompts-impl/passo-03-quadro-atendimento.md` |
 | 4 | Cadastro de Pedido (Tela 5), integrado ao Kanban do Passo 3 | Passo 3 | **Concluído e validado** (2026-09-14) | `prompts-impl/passo-04-cadastro-pedido.md` |
-| 5 | Execução de Pedido (Tela 6), integrado ao Kanban do Passo 3 | Passos 3, 4 | **Em especificação** | `prompts-impl/passo-05-execucao-pedido.md` |
-| 6 | Edição de Pedido em Execução (Tela 9), integrado ao Kanban do Passo 3 | Passos 3, 5 | Aguardando | — |
+| 5 | Execução de Pedido (Tela 6), integrado ao Kanban do Passo 3 | Passos 3, 4 | **Concluído e validado** (2026-09-14) | `prompts-impl/passo-05-execucao-pedido.md` |
+| 6 | Edição de Pedido em Execução (Tela 9), integrado ao Kanban do Passo 3 | Passos 3, 5 | **Em especificação** | `prompts-impl/passo-06-edicao-pedido-execucao.md` |
 | 7 | Cancelamento de Pedido (Tela 7), integrado ao Kanban do Passo 3 | Passo 3 | Aguardando | — |
 | 8 | Devolução de Entrega (Tela 8), integrado ao Kanban do Passo 3 | Passos 3, 5 | Aguardando | — |
 
@@ -65,5 +65,6 @@ Decisões que não vêm da documentação funcional/não funcional, tomadas para
 - **Passo 2:** concluído e validado em 2026-09-14.
 - **Passo 3:** concluído e validado em 2026-09-14.
 - **Passo 4:** concluído e validado em 2026-09-14.
-- **Passo 5:** em especificação — prompt criado em `prompts-impl/passo-05-execucao-pedido.md`, aguardando implementação e validação.
-- **Passos 6 a 8:** aguardando finalização e validação do Passo 5 para serem especificados.
+- **Passo 5:** concluído e validado em 2026-09-14.
+- **Passo 6:** em especificação — prompt criado em `prompts-impl/passo-06-edicao-pedido-execucao.md`, aguardando implementação e validação.
+- **Passos 7 e 8:** aguardando finalização e validação do Passo 6 para serem especificados.
