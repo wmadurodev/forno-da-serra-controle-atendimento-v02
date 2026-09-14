@@ -43,4 +43,16 @@ class FluxoAtendimentoRepository {
     final db = await _appDatabase.database;
     await db.insert(_table, fluxo.toMap());
   }
+
+  /// Finaliza o fluxo (`functional.md` §5.3) — sem pré-condição sobre os
+  /// pedidos nele contidos.
+  Future<void> fechar(String identificador) async {
+    final db = await _appDatabase.database;
+    await db.update(
+      _table,
+      {'status': FluxoAtendimentoStatus.fechado.value},
+      where: 'identificador = ?',
+      whereArgs: [identificador],
+    );
+  }
 }

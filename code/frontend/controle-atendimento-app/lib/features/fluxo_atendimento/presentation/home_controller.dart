@@ -23,4 +23,9 @@ class HomeController extends ChangeNotifier {
     loading = false;
     notifyListeners();
   }
+
+  Future<void> fecharFluxo(FluxoAtendimento fluxo) async {
+    await _repository.fechar(fluxo.identificador);
+    await load();
+  }
 }

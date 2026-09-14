@@ -5,6 +5,7 @@ import '../../../core/widgets/loading_view.dart';
 import '../data/fluxo_atendimento_repository.dart';
 import '../domain/fluxo_atendimento.dart';
 import 'cadastro_fluxo_screen.dart';
+import 'fechar_fluxo_dialog.dart';
 import 'home_controller.dart';
 import 'quadro_atendimento_screen.dart';
 
@@ -30,7 +31,7 @@ class _HomeView extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Controle de Atendimento')),
-      body: _buildBody(controller),
+      body: _buildBody(context, controller),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _onNovoFluxo(context),
         icon: const Icon(Icons.add),
@@ -39,7 +40,7 @@ class _HomeView extends StatelessWidget {
     );
   }
 
-  Widget _buildBody(HomeController controller) {
+  Widget _buildBody(BuildContext context, HomeController controller) {
     if (controller.loading) {
       return const LoadingView();
     }
@@ -54,11 +55,17 @@ class _HomeView extends StatelessWidget {
       itemCount: controller.fluxos.length,
       itemBuilder: (context, index) {
         final fluxo = controller.fluxos[index];
+        final aberto = fluxo.status == FluxoAtendimentoStatus.aberto;
         return ListTile(
           title: Text(fluxo.identificador),
-          subtitle: Text(
-            fluxo.status == FluxoAtendimentoStatus.aberto ? 'Aberto' : 'Fechado',
-          ),
+          subtitle: Text(aberto ? 'Aberto' : 'Fechado'),
+          trailing: aberto
+              ? IconButton(
+                  icon: const Icon(Icons.lock_outline),
+                  tooltip: 'Fechar Fluxo de Atendimento',
+                  onPressed: () => _onFecharFluxo(context, fluxo),
+                )
+              : null,
           onTap: () => _onFluxoSelecionado(context, fluxo),
         );
       },
@@ -71,6 +78,17 @@ class _HomeView extends StatelessWidget {
       MaterialPageRoute(builder: (_) => const CadastroFluxoScreen()),
     );
     await controller.load();
+  }
+
+  Future<void> _onFecharFluxo(BuildContext context, FluxoAtendimento fluxo) async {
+    final controller = context.read<HomeController>();
+    final confirmado = await showDialog<bool>(
+      context: context,
+      builder: (_) => FecharFluxoDialog(fluxo: fluxo),
+    );
+    if (confirmado == true) {
+      await controller.fecharFluxo(fluxo);
+    }
   }
 
   void _onFluxoSelecionado(BuildContext context, FluxoAtendimento fluxo) {
