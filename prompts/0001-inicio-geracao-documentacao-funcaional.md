@@ -1,0 +1,1 @@
+ a partir do documento @[docs/lixo-funcional.txt] estruture o conteudo dos arquivos  @[docs/controle-atendimento-functional.md] e @[docs/ontrole-atendimento-data-structure.md] de forma que uma LLM consiga ser assertiva no momento geracao do codigo futuro. Neste momento nenhum codigo sera gerado, somente a documentacao tecnica. 

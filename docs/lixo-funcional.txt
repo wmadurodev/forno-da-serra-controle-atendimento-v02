@@ -1,0 +1,121 @@
+Como um analista de requisitos senior altere o documento @docs/controle-atendimento-functional.md para especificar o fluxo de negocios da aplicacao conforme descrito abaixo:
+
+Visao Geral
+
+Este projeto tera como objetivo criar uma aplicacao para contralar o fluxo do atendimento dos pedidos. O processo inicia-se sempre que um cliente efetua uma ligacao ou chamada de whatsapp para fazer sua solicitacao de compra.
+
+Conceitos:
+
+- Flxo de Atendimento: 
+
+Um fluxo de atendimento estara relacionados a um ou mais pedidos e possuira o status aberto ou fechado.
+
+Atributos:
+    - Idenfificador
+        - Tipo do dado: texto com 15 caracteres. Sera usada a data corrente como valor default.
+        - Status:
+            - Tipo do dado: Enumeracao ("aberto", "fechado") 
+
+
+- Pedido
+
+Atributos:
+    - identificador
+        - Tipo do dado: texto com 20 caracteres
+    - Status: 
+         - Tipo do dado: Enumeracao ("aguardando atendimento", "em atendimento", "em execucao", "retirado no balcao", "enviado", "entregue", "devolvido")
+    - Cancelamento:
+         - Tipo do dado: boolean             
+    - Nome cliente
+         - Tipo do dado: texto com 50 caracteres
+    - Tipo Entrega: 
+        - Tipo do dado: Enumeracao (Delivery, Retirada no Balcao)
+    - Tipo de Pagamento 
+        - Tipo do dado: Enumeracao (Pix, Cartao, Dinheiro)
+    - Endereco 
+        - Tipo do dado: texto com 500 caracteres
+    - Observacao 
+        - Tipo do dado: texto com 100 caracteres
+    - Restricoes 
+        - Tipo do dado: texto com 500 caracteres
+    - Valor Pix
+        - Tipo do dado: Valor numero monetario
+    - Mesa
+        - Tipo do dado: texto com 20 caracteres
+    - Imagem do Pedido 
+        - Tipo do dado: referencia para imagem cadastrada para o pedido
+    - Motivo Cancelamento
+        - Tipo do dado: texto com 100 caracteres
+    - Motivo Devolucao
+        - Tipo do dado: texto com 100 caracteres. Os valores "Nao encontrado" e "Devolvido pelo cliente" serao apresentados como opcao, mas o usuario podera informar qualquer outro dado
+
+
+Funcionalidades:
+
+1. Inicio o sistema
+
+    Ao iniciar o processo o sistema devera verificar se existe um fluxo de atendimento "aberto" e apresenta-lo para o usuario. Caso nao exista nenhum fluxo aberto, o sistema devera mostrar o historico dos fluxos de atendimento e possibilitar a criacao de un novo.
+    O sistema devera possibilitar somente um fluxo de atendimento com o status em aberto.
+
+2. Fluxo de Atendimento
+
+    2.1. Novo Fluxo de Atendimento
+
+    Um novo fluxo de atendimento recomendara a data corrente como idenrificador, que podera ser alterado pelo usuario para qualquer outra informacao que ele quiser.
+
+    2.2. Finalizar fluxo de atendimento
+
+    Um fluxo de atendimento aberto podera ser fechado a qualquer momento. Um fluxo de atendimento fechado nao podera ter seus pedidos alterados, somente visualizado.
+
+    2.3. Visuazacao de historio de fluxos de atendimento
+
+    O sistema dever permitir ao usuario sair do fluxo de atendimento corrente e abrir um fluxo de atendimento anterior do sistema.
+
+    2.4. Busca de pedidos em um fluxo de atendimento
+
+    O sistema devera pemitir ao usuario buscar os pedidos dentro do fluxo de atendimento selecionado por nome do cliente, identificador do cliente, numero da mesa ou endereco entrega.
+
+
+3. Pedidos
+
+    3.1. Novo Pedido
+
+    Uma vez que um fluxo de atendimento esteja aberto, o usuario do sistema ira cirar um novo pedido sempre que receber uma novo contato do cliente. Se o usuario preencher somente o identificador do pedido e salvar o pedido ficara no estagio de "aguardando atendimento", caso todos os dados sejam preenchidos o pedido passa para o estagio "em atendimento".
+
+    3.2. Iniciar Pedido
+
+    Caso um pedido esteja no estagio "aguardando atendimento" o usuario podera iniciar o atendimento do mesmo e o sistema abrira a tela de cadastro pedido para que o usuario complete os dados e faca o salvamento. Ao salvar um pedido com todos os dados preenchidos o pedido passa para o estario "em atentimento".
+
+    3.3. Excluir Pedido
+
+    Caso um pedido esteja no estagio "aguardando atentimento" este podera ser excluido do sistema.
+
+    3.4. Executar Pedido
+
+    Um pedido no estagio "em atendimento" passara para o estagio "em execucao" assim que o usuario informar os seguintes dados de execucao do pedido: Mesa, Valor Pix (opcional), Restricao (optional) e imagem.
+
+    3.5. Cancelar Pedido
+
+    Um pedido que esteja nos estagios "em atendimento" ou "em execucao" podera ser cancelado a qualquer momento. O usuario podera optionalmente informar o motivo.
+
+    3.6. Pedido Retirado no Balcao
+
+    Um pedido no estagio "em execucao" podera passar para o estagio "retirado no balcao", caso o "tipo de entrga" seja "retirada no balcao".
+
+    3.7. Pedido Enviado
+
+    Um pedido no estagio  "em execucao" podera passar para o estagio "enviado", caso o "tipo de entrga" seja "delivery".
+
+    3.8. Pedido Entregue
+
+    Um pedido no estagio "enviado" podera passar para o estagio "entregue, caso o "tipo de entrga" seja "delivery".
+
+    3.9. Pedido Devolvido
+
+    Um pedido no estagio "enviado" podera passar para o estagio "nao entregue", caso o "tipo de entrga" seja "delivery". O usuario devera informar o motivo do retorno do pedido.
+
+
+
+
+
+

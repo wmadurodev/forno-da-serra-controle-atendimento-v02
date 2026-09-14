@@ -1,0 +1,175 @@
+Como um UI/UX designer senior altere o documento @docs/controle-atendimento-prototype.md para especificar tecnicamente a interface da aplicacao mobile a ser desenvolvida conforme requisitos definicoes abaixo:
+
+Tela 1 - Splash: 
+
+    Devera informar ao usuario que o sistema esta sendo inicializado enquanto executa as operacoes internas para validar se existe um fluxo de atendimento aberto. Apos a verificacao, se existir um fluxo de atendimento aberto, ir para a tela do fluxo de atendimento (tela 3), caso contrario, mostrar a tela home do sistema (tela 2).
+
+Tela 2 - Home:
+
+    Esta tela mostrar a lista de todos os fluxos fluxos de atendimento ordenados por data decrescente e um botao para a criacao de um novo fluxo de atendimento.
+
+    Operacoes da tela:
+        - Clique no botao "novo fluxo": O sistema devera apresentar a tela para o cadastro do novo fluxo de atendimento (tela 3).
+        - Clique em um dos fluxo de atendimento listados: Abrir a tela do fluxo de atendimento (tela 4). 
+
+Tela 3 - Cadastro do Fluxo de atendimento
+
+    Esta tela dvera conter os seguintes campos:
+        - Identificador
+        - Botoes Confirmar e Cancelar
+
+    Operacoes da tela:
+        - Clique no botao Confirmar: Abrir a tela de execucao do fluxo de atendiento (tela 4)
+        - Clique no botao Cancelar: Ignore o cadastro e volte para a tela home (tela 2)    
+
+Tela 4 - Execucao do Fluxo de atendimento  
+
+    Esta tela devera conter os seguintes elementos:
+        - Header:
+            - Mostrara identificador do fluxo de atendimento, um botao "novo atendimento" para criacao de um "novo pedido" e um botao para "busca de pedidos".
+
+        - Visualizador de fluxo de atendimento:
+            O restante da tela devera conter um elemento visual que devera possibilitar de rolagem horizontal e que apresentara os pedidos do fluxo de atendimento em colunas de acordo como seu status. Portanto teremos os pedidos mostrados em cards dentro de suas respectivas colunas organizados pelos seguintes status:
+                - "aguardando atendimento"-
+                - "em atendimento"
+                - "em execucao"
+                - "retirado no balcao"
+                - "enviado"
+                - "entregue"
+                - "devolvido"
+            Nao existir uma coluna para mostrar os pedidos com status cancelado. Este status ira somente alterar o card do pedido confome sera deinido na definicao do elemento do card do pedido.
+
+    Operacoes da tela:
+        - Clique no botao "novo pedido": Abrir a tela de cadastro de um novo pedido (tela 5).
+        - Clique no botao "busca de pedidos": Nao implementar ainda.
+    
+    Cards de pedidos: Cada coluna do visualizador do fluxo de atendimento mostrara os cards relativos ao status dos pedidos. Seguem abaixo a definicao de como ffuncionara cada card:
+        - Card dos pedidos com status "aguardando atendimento"
+            Elementos: 
+                - Idenfificador do pedido
+                - Footer: botao para atendimento e botao para exclusao
+            Operacoes:
+                - Clique botao atendimento: Abrir tela de pedido (tela 5)
+                - Clique botao exclusao: Abrir dialog de confirmacao da exclusao do pedido e, em caso de confirmacao, excluir e atualizar a tela de visualizaca.
+
+        - Card dos pedidos com status "em atendimento"        
+            Elementos: 
+                - Idenfificador do pedido
+                - Nome do Cliente
+                - Tipo de Entrega
+                - Tipo de Pagamento
+                - Endereco
+                - Observacao
+                - Cancelamento: Caso o flag de cancelamento do pedido seja true, mostrar a palavra "cancelado" em vermelho.
+                - Footer: botao para executar e botao para cancelar
+                    Regra:
+                    - O Footer so devera ser mostrado se flag de cancelamento for false
+
+            Operacoes:
+                - Clique botao executar: Abrir tela de pedido (tela 6)
+                - Clique botao editar: Abrir cadastro de pedido (tela 5)
+                - Clique botao cancelar: Abrir dialog de confirmacao do cancelamento do pedido. (tela 7)
+
+        - Card dos pedidos com status "em execucao"        
+            Elementos: 
+                - Idenfificador do pedido
+                - Nome do Cliente
+                - Tipo de Entrega
+                - Tipo de Pagamento
+                - Endereco (so sera mostrado se o tipo de entrega for "delivery")
+                - Observacao
+                - Mesa
+                - Restricoes
+                - Imagem do pedido
+                - Cancelamento: Caso o flag de cancelamento do pedido seja true, mostrar a palavra "cancelado" em vermelho.
+                - Footer: botoes para o tipo de entrega e botao para cancelar
+                    O botao a ser apresentado para o tipo de entrega sera definido pelo "Tipo de Entrega". Caso o tipo de entrga seja "Delivery" mosrar o Botao "Enviado", caso seja "Retirada no Balccao", mostrar o botao "Retirado"
+                    Regra:
+                    - O Footer so devera ser mostrado se flag de cancelamento for false
+            Operacoes:
+                - Clique botao Retirado: Mudar o statu do pedido para "retirado no balcao" e atualizar a tela de visualizacao de atendimento
+                - Clique botao Enviado: Mudar o statu do pedido para "enviado" e atualizar a tela de visualizacao de atendimento
+                - Clique botao cancelar: Abrir dialog de confirmacao do cancelamento do pedido. (tela 7)
+
+        - Card dos pedidos com status "Retirado no Balcao"        
+            Elementos: 
+                - Idenfificador do pedido
+                - Nome do Cliente
+                - Tipo de Entrega
+                - Tipo de Pagamento
+                - Observacao
+                - Mesa
+                - Restricoes
+                - Imagem do pedido
+                
+        - Card dos pedidos com status "enviado"        
+            Elementos: 
+                - Idenfificador do pedido
+                - Nome do Cliente
+                - Tipo de Entrega
+                - Tipo de Pagamento
+                - Endereco (so sera mostrado se o tipo de entrega for "delivery")
+                - Observacao
+                - Mesa
+                - Restricoes
+                - Imagem do pedido
+                - Footer: Botao Entregue e Devolvido
+            Operacoes:
+                - Clique botao Entregue: Mudar o statu do pedido para "entrgue" e atualizar a tela de visualizacao de atendimento
+                - Clique botao Devolvido: Abrir dialog de devolucao da entrega. (tela 8)
+               
+
+Tela 5 - Cadastro de pedido
+
+    Esta tela devera conter os seguintes campos:
+        - Idenfificador do pedido
+        - Nome do Cliente
+        - Tipo de Entrega
+        - Tipo de Pagamento
+        - Endereco
+        - Observacao
+        - Footer: botao para gravar e botao para cancelar
+    Operacoes:
+        - Clique botao gravar: Grava o pedido. 
+            Regras: 
+                - Todos os campos da tela ficarao desabilitados ate que o idenficiador seja informado. Apos a usuario confirmar o identificador, o sistema devera habilitar os campos e:
+                    - Se o idenfificador existir, recuperar os dados: endereco, tipo pgamento, tipo entrega e gravar o pedido com o status "em atendimento".
+                    - Se o idenfificador nao existir, gravar o pedido como "aguardando atendimento" caso o usuario nao preencha os campos confome regras abaixo:
+                        - Se o usuario selecionar o tipo tipo de pagamento delivery o endereco devera ser informado.
+        - Clique botao cancelar: Abrir dialog de confirmacao do cancelamento do pedido. (tela 7)
+
+Tela 6 - Execucao de pedido
+    Esta tela devera conter os seguintes campos:
+        - Imagem que sera capturada pela camera
+        - Restricao (opcional)
+        - Valor pix (opcional)
+        - Mesa
+        - Footer: botao para gravar e botao para cancelar
+    Operacoes:
+        - Clique botao gravar: Grava os campos para o pedido e alterar o status para "em execucao"
+        - Clique botao cancelar: Fechar a tela
+
+
+Tela 7 - Cancelamento de pedido
+
+    Esta tela devera conter os seguintes campos:
+        - Motivo (opcional)
+        - Footer: botao para confirmar e botao para cancelar
+    Operacoes:
+        - Clique botao confirmar: Alterar o falg de cancelamento para true
+        - Clique botao cancelar: Fechar a tela
+
+Tela 8 - Devolucao de entrega
+
+    Esta tela devera conter os seguintes campos:
+        - Motivo da devolucao: Utilizar o valor default "Nao encontrado"
+        - Footer: botao para confirmar e botao para cancelar
+    Operacoes:
+        - Clique botao confirmar: Alterar o status do pedido para "devolvido"
+        - Clique botao cancelar: Fechar a tela
+
+
+
+
+
+

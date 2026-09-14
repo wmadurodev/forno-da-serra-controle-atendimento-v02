@@ -1,0 +1,6 @@
+Como um engenheiro de software senior altere o documento @docs/controle-atendimento-non-functional.md para especificar tecnicamente a aplicacao a ser desenvolvida conforme requisitos nao funcionais abaixo:
+
+- Aplicacao mobile em flutter que funcionara 100% offline utlizando o sqllite como banco de dados. 
+
+- Esta aplicacao nao tera processo de autenticacao/autorizacao.
+
