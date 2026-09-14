@@ -10,6 +10,7 @@ import '../../pedido/presentation/devolucao_entrega_screen.dart';
 import '../../pedido/presentation/edicao_pedido_execucao_screen.dart';
 import '../../pedido/presentation/execucao_pedido_screen.dart';
 import '../domain/fluxo_atendimento.dart';
+import 'home_screen.dart';
 import 'pedido_card.dart';
 import 'quadro_atendimento_controller.dart';
 
@@ -58,6 +59,11 @@ class _QuadroView extends StatelessWidget {
             tooltip: 'Busca de Pedidos',
             onPressed: () => _snack(context, 'Funcionalidade não implementada nesta fase'),
           ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Sair',
+            onPressed: () => _confirmarSaida(context),
+          ),
         ],
       ),
       body: controller.loading ? const LoadingView() : _buildQuadro(context, controller),
@@ -99,6 +105,27 @@ class _QuadroView extends StatelessWidget {
 
   void _snack(BuildContext context, String mensagem) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(mensagem)));
+  }
+
+  Future<void> _confirmarSaida(BuildContext context) async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Sair'),
+        content: const Text('Deseja sair da execução deste fluxo de atendimento?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: const Text('Cancelar')),
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(true), child: const Text('Sair')),
+        ],
+      ),
+    );
+
+    if (confirmar == true && context.mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        (route) => false,
+      );
+    }
   }
 
   Future<void> _abrirCadastroPedido(

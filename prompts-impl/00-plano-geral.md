@@ -47,8 +47,9 @@ Decisões que não vêm da documentação funcional/não funcional, tomadas para
 | 6 | Edição de Pedido em Execução (Tela 9), integrado ao Kanban do Passo 3 | Passos 3, 5 | **Concluído e validado** (2026-09-14) | `prompts-impl/passo-06-edicao-pedido-execucao.md` |
 | 7 | Cancelamento de Pedido (Tela 7), integrado ao Kanban do Passo 3 | Passo 3 | **Concluído e validado** (2026-09-14) | `prompts-impl/passo-07-cancelamento-pedido.md` |
 | 8 | Devolução de Entrega (Tela 8), integrado ao Kanban do Passo 3 | Passos 3, 5 | **Em especificação** | `prompts-impl/passo-08-devolucao-entrega.md` |
+| 9 | Botão "Sair" no header da Tela 4 (Execução do Fluxo de Atendimento) | Passo 3 | **Em especificação** | `prompts-impl/passo-09-sair-quadro-atendimento.md` |
 
-> Numeração de telas conforme `docs/controle-atendimento-prototype.md` §1 (Telas 1–9).
+> Numeração de telas conforme `docs/controle-atendimento-prototype.md` §1 (Telas 1–9). O Passo 9 é um acréscimo de UI solicitado diretamente pelo usuário desta iniciativa de implementação — não corresponde a nenhuma tela numerada do protótipo nem a uma regra de `docs/controle-atendimento-functional.md` (ver `prompts-impl/passo-09-sair-quadro-atendimento.md`).
 
 ## 5. Fluxo de Trabalho por Passo
 
@@ -68,4 +69,5 @@ Decisões que não vêm da documentação funcional/não funcional, tomadas para
 - **Passo 5:** concluído e validado em 2026-09-14.
 - **Passo 6:** concluído e validado em 2026-09-14.
 - **Passo 7:** concluído e validado em 2026-09-14.
-- **Passo 8:** em especificação — prompt criado em `prompts-impl/passo-08-devolucao-entrega.md`, aguardando implementação e validação. Último passo do plano.
+- **Passo 8:** em especificação — prompt criado em `prompts-impl/passo-08-devolucao-entrega.md`, aguardando implementação e validação. Último passo do plano original (telas do protótipo).
+- **Passo 9:** em especificação — prompt criado em `prompts-impl/passo-09-sair-quadro-atendimento.md`, aguardando implementação e validação. Acréscimo solicitado pelo usuário em 2026-09-14, fora da numeração original de telas.
