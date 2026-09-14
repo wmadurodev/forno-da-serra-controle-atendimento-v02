@@ -68,7 +68,12 @@ Resolve a pendência **DS-7** de `controle-atendimento-data-structure.md` à luz
 - Não há, portanto, nenhum requisito de controle de acesso, trilha de auditoria por usuário, ou log de "quem fez o quê" — a aplicação não terá logs (ver **NF-5**, confirmado).
 - Consequência direta para o schema: nenhuma tabela ou coluna de auditoria por usuário é definida em §4.
 
-## 7. Pendências / Assunções a validar com o negócio
+## 7. Ambiente de Desenvolvimento
+
+- O SDK do Flutter é gerenciado via **asdf** (versão fixada pela máquina/projeto de desenvolvimento, não pela origem funcional).
+- O Android SDK, `adb` e demais ferramentas de build/depuração Android já estão instalados e configurados na máquina de desenvolvimento — fora do escopo do gerenciamento via asdf.
+
+## 8. Pendências / Assunções a validar com o negócio
 
 | ID | Descrição | Interpretação adotada neste documento |
 |---|---|---|
@@ -79,7 +84,7 @@ Resolve a pendência **DS-7** de `controle-atendimento-data-structure.md` à luz
 | NF-5 *(confirmado)* | A origem não menciona necessidade de log/auditoria de ações, apesar de o app permitir múltiplos usuários físicos sem distinção. | **Confirmado pelo negócio:** sem logs. |
 | NF-6 *(confirmado)* | A origem não especifica o que ocorre com `imagem_pedido_ref` em caso de desinstalação do app ou limpeza de dados do SO. | **Confirmado pelo negócio:** as imagens devem ser apagadas em caso de desinstalação ou limpeza de dados. |
 
-## 8. Fora de Escopo deste Documento
+## 9. Fora de Escopo deste Documento
 
 - Regras de negócio, máquina de estados e validações funcionais: ver `controle-atendimento-functional.md`.
 - Entidades, atributos e enumerações de domínio: ver `controle-atendimento-data-structure.md`.
