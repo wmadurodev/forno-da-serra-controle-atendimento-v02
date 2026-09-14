@@ -20,12 +20,13 @@ class AppDatabase {
 
     return openDatabase(
       dbPath,
-      version: 1,
+      version: 2,
       onConfigure: (db) => db.execute('PRAGMA foreign_keys = ON'),
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE fluxo_atendimento (
-            identificador TEXT PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            identificador TEXT NOT NULL UNIQUE,
             status TEXT NOT NULL CHECK (status IN ('aberto', 'fechado'))
           )
         ''');
@@ -57,6 +58,26 @@ class AppDatabase {
           CREATE INDEX idx_pedido_fluxo_atendimento_id
           ON pedido(fluxo_atendimento_id)
         ''');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          // Passo 11: nova chave sequencial `id` para ordenar a Home por
+          // ordem real de criação. SQLite não permite alterar a PRIMARY KEY
+          // de uma tabela existente via ALTER TABLE — recria a tabela.
+          await db.execute('ALTER TABLE fluxo_atendimento RENAME TO fluxo_atendimento_old');
+          await db.execute('''
+            CREATE TABLE fluxo_atendimento (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              identificador TEXT NOT NULL UNIQUE,
+              status TEXT NOT NULL CHECK (status IN ('aberto', 'fechado'))
+            )
+          ''');
+          await db.execute('''
+            INSERT INTO fluxo_atendimento (identificador, status)
+            SELECT identificador, status FROM fluxo_atendimento_old ORDER BY rowid ASC
+          ''');
+          await db.execute('DROP TABLE fluxo_atendimento_old');
+        }
       },
     );
   }

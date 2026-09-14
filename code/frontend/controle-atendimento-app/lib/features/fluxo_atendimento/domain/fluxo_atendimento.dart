@@ -20,15 +20,21 @@ enum FluxoAtendimentoStatus {
 /// Entidade Fluxo de Atendimento — `docs/controle-atendimento-data-structure.md` §2.
 class FluxoAtendimento {
   const FluxoAtendimento({
+    this.id,
     required this.identificador,
     required this.status,
   });
 
+  /// Chave técnica sequencial (`id INTEGER PRIMARY KEY AUTOINCREMENT`),
+  /// usada apenas para ordenar por ordem real de criação (Passo 11) — nulo
+  /// antes da persistência. Não é a chave de negócio (ver `identificador`).
+  final int? id;
   final String identificador;
   final FluxoAtendimentoStatus status;
 
   factory FluxoAtendimento.fromMap(Map<String, Object?> map) {
     return FluxoAtendimento(
+      id: map['id']! as int,
       identificador: map['identificador']! as String,
       status: FluxoAtendimentoStatus.fromValue(map['status']! as String),
     );

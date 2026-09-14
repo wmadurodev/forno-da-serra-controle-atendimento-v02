@@ -15,7 +15,7 @@ class FluxoAtendimentoRepository {
 
   Future<List<FluxoAtendimento>> listAll() async {
     final db = await _appDatabase.database;
-    final rows = await db.query(_table, orderBy: 'identificador DESC');
+    final rows = await db.query(_table, orderBy: 'id DESC');
     return rows.map(FluxoAtendimento.fromMap).toList();
   }
 
@@ -54,5 +54,16 @@ class FluxoAtendimentoRepository {
       where: 'identificador = ?',
       whereArgs: [identificador],
     );
+  }
+
+  /// Exclusão definitiva (hard delete, `functional.md` FN-6) do fluxo e de
+  /// todos os seus Pedidos — Passo 11. Exclui os pedidos antes do fluxo por
+  /// causa da FK `pedido.fluxo_atendimento_id` com `PRAGMA foreign_keys = ON`.
+  Future<void> excluirComPedidos(String identificador) async {
+    final db = await _appDatabase.database;
+    await db.transaction((txn) async {
+      await txn.delete('pedido', where: 'fluxo_atendimento_id = ?', whereArgs: [identificador]);
+      await txn.delete(_table, where: 'identificador = ?', whereArgs: [identificador]);
+    });
   }
 }

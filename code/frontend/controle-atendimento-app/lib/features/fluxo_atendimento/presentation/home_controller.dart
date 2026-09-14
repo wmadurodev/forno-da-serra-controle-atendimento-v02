@@ -28,4 +28,9 @@ class HomeController extends ChangeNotifier {
     await _repository.fechar(fluxo.identificador);
     await load();
   }
+
+  Future<void> excluirFluxo(FluxoAtendimento fluxo) async {
+    await _repository.excluirComPedidos(fluxo.identificador);
+    await load();
+  }
 }

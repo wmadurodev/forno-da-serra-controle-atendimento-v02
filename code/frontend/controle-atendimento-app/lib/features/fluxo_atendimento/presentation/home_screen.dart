@@ -5,9 +5,17 @@ import '../../../core/widgets/loading_view.dart';
 import '../data/fluxo_atendimento_repository.dart';
 import '../domain/fluxo_atendimento.dart';
 import 'cadastro_fluxo_screen.dart';
+import 'excluir_fluxo_dialog.dart';
 import 'fechar_fluxo_dialog.dart';
 import 'home_controller.dart';
 import 'quadro_atendimento_screen.dart';
+
+/// Fundo da tela — Passo 11, tom quente/creme sem regra de negócio associada.
+const _homeBackgroundColor = Color(0xFFFFF8E7);
+
+/// Fundo dos cards de fluxo `fechado` — Passo 11, reforça visualmente que o
+/// fluxo está encerrado/somente leitura.
+final _fluxoFechadoCardColor = Colors.grey.shade300;
 
 /// Tela 2 — Home (`docs/controle-atendimento-prototype.md` §3.2).
 class HomeScreen extends StatelessWidget {
@@ -30,6 +38,7 @@ class _HomeView extends StatelessWidget {
     final controller = context.watch<HomeController>();
 
     return Scaffold(
+      backgroundColor: _homeBackgroundColor,
       appBar: AppBar(title: const Text('Controle de Atendimento')),
       body: _buildBody(context, controller),
       floatingActionButton: FloatingActionButton.extended(
@@ -52,21 +61,35 @@ class _HomeView extends StatelessWidget {
     }
 
     return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       itemCount: controller.fluxos.length,
       itemBuilder: (context, index) {
         final fluxo = controller.fluxos[index];
         final aberto = fluxo.status == FluxoAtendimentoStatus.aberto;
-        return ListTile(
-          title: Text(fluxo.identificador),
-          subtitle: Text(aberto ? 'Aberto' : 'Fechado'),
-          trailing: aberto
-              ? IconButton(
-                  icon: const Icon(Icons.lock_outline),
-                  tooltip: 'Fechar Fluxo de Atendimento',
-                  onPressed: () => _onFecharFluxo(context, fluxo),
-                )
-              : null,
-          onTap: () => _onFluxoSelecionado(context, fluxo),
+        return Card(
+          color: aberto ? null : _fluxoFechadoCardColor,
+          margin: const EdgeInsets.symmetric(vertical: 6),
+          child: ListTile(
+            title: Text(fluxo.identificador),
+            subtitle: Text(aberto ? 'Aberto' : 'Fechado'),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (aberto)
+                  IconButton(
+                    icon: const Icon(Icons.done_all),
+                    tooltip: 'Fechar Fluxo de Atendimento',
+                    onPressed: () => _onFecharFluxo(context, fluxo),
+                  ),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline),
+                  tooltip: 'Excluir Fluxo de Atendimento',
+                  onPressed: () => _onExcluirFluxo(context, fluxo),
+                ),
+              ],
+            ),
+            onTap: () => _onFluxoSelecionado(context, fluxo),
+          ),
         );
       },
     );
@@ -88,6 +111,17 @@ class _HomeView extends StatelessWidget {
     );
     if (confirmado == true) {
       await controller.fecharFluxo(fluxo);
+    }
+  }
+
+  Future<void> _onExcluirFluxo(BuildContext context, FluxoAtendimento fluxo) async {
+    final controller = context.read<HomeController>();
+    final confirmado = await showDialog<bool>(
+      context: context,
+      builder: (_) => ExcluirFluxoDialog(fluxo: fluxo),
+    );
+    if (confirmado == true) {
+      await controller.excluirFluxo(fluxo);
     }
   }
 
