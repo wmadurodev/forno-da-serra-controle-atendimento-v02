@@ -23,4 +23,14 @@ class ImagemPedidoStorage {
     await imagemTemporaria.copy(destino.path);
     return destino.path;
   }
+
+  /// Remove o arquivo de imagem — usado ao excluir definitivamente um
+  /// Pedido/Fluxo de Atendimento (Passo 21). Não falha se o arquivo já não
+  /// existir.
+  Future<void> excluir(String caminho) async {
+    final arquivo = File(caminho);
+    if (await arquivo.exists()) {
+      await arquivo.delete();
+    }
+  }
 }
