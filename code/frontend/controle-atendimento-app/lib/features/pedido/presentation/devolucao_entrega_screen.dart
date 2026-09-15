@@ -55,6 +55,8 @@ class _DevolucaoEntregaScreenState extends State<DevolucaoEntregaScreen> {
                 controller: _motivoController,
                 decoration: const InputDecoration(labelText: 'Motivo da Devolução'),
                 maxLines: 3,
+                textInputAction: TextInputAction.done,
+                onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Informe o motivo da devolução';

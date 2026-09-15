@@ -38,6 +38,8 @@ class _CancelamentoPedidoScreenState extends State<CancelamentoPedidoScreen> {
           controller: _motivoController,
           decoration: const InputDecoration(labelText: 'Motivo'),
           maxLines: 3,
+          textInputAction: TextInputAction.done,
+          onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
         ),
       ),
       bottomNavigationBar: SafeArea(
