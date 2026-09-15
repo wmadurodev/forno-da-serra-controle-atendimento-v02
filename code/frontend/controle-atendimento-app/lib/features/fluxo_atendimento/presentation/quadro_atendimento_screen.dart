@@ -46,13 +46,29 @@ class _QuadroView extends StatefulWidget {
 }
 
 class _QuadroViewState extends State<_QuadroView> {
+  static const _larguraColuna = 300.0;
+  static const _espacamento = 12.0;
+  static const _paddingInicial = 8.0;
+
   final _scrollController = ScrollController();
+
+  /// Índice (em `PedidoStatus.values`) da coluna considerada visível no
+  /// momento — usado para destacar o ícone correspondente no footer
+  /// (Passo 28).
+  int _indiceFaseVisivel = 0;
 
   FluxoAtendimento get fluxo => widget.fluxo;
   bool get _somenteLeitura => fluxo.status == FluxoAtendimentoStatus.fechado;
 
   @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_atualizarFaseVisivel);
+  }
+
+  @override
   void dispose() {
+    _scrollController.removeListener(_atualizarFaseVisivel);
     _scrollController.dispose();
     super.dispose();
   }
@@ -61,10 +77,7 @@ class _QuadroViewState extends State<_QuadroView> {
   /// à esquerda da tela visível — Passo 25.
   void _rolarParaFase(PedidoStatus status) {
     final indice = PedidoStatus.values.indexOf(status);
-    const larguraColuna = 300.0;
-    const espacamento = 12.0;
-    const paddingInicial = 8.0;
-    final offsetAlvo = paddingInicial + indice * (larguraColuna + espacamento);
+    final offsetAlvo = _paddingInicial + indice * (_larguraColuna + _espacamento);
     final maximo = _scrollController.position.maxScrollExtent;
     _scrollController.animateTo(
       offsetAlvo.clamp(0.0, maximo),
@@ -73,15 +86,29 @@ class _QuadroViewState extends State<_QuadroView> {
     );
   }
 
+  /// Atualiza `_indiceFaseVisivel` conforme a posição de rolagem do Kanban
+  /// — Passo 28. Arredonda para a coluna mais próxima do início do
+  /// percurso, então o destaque muda assim que o usuário rola além do meio
+  /// do caminho entre duas colunas.
+  void _atualizarFaseVisivel() {
+    final indice = ((_scrollController.offset - _paddingInicial) / (_larguraColuna + _espacamento))
+        .round()
+        .clamp(0, PedidoStatus.values.length - 1);
+    if (indice != _indiceFaseVisivel) {
+      setState(() => _indiceFaseVisivel = indice);
+    }
+  }
+
   Widget _buildNavegadorFases(QuadroAtendimentoController controller) {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             for (final status in PedidoStatus.values)
-              _iconeFase(status, iconePorFase[status]!, controller.pedidosDe(status).length),
+              Expanded(
+                child: _iconeFase(status, iconePorFase[status]!, controller.pedidosDe(status).length),
+              ),
           ],
         ),
       ),
@@ -91,6 +118,11 @@ class _QuadroViewState extends State<_QuadroView> {
   Widget _iconeFase(PedidoStatus status, IconData icone, int quantidade) {
     final indiceReal = PedidoStatus.values.indexOf(status);
     final cor = corCinza(status) ?? corColuna(indiceReal, PedidoStatus.values.length);
+    // Destaque só em modo retrato — em paisagem várias colunas ficam
+    // visíveis ao mesmo tempo, então marcar "a" coluna visível não faz
+    // sentido (Passo 28, revisão).
+    final orientacaoRetrato = MediaQuery.orientationOf(context) == Orientation.portrait;
+    final ativo = orientacaoRetrato && indiceReal == _indiceFaseVisivel;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -100,9 +132,16 @@ class _QuadroViewState extends State<_QuadroView> {
             customBorder: const CircleBorder(),
             onTap: () => _rolarParaFase(status),
             child: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: cor, shape: BoxShape.circle),
-              child: Icon(icone, color: Colors.black87),
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: ativo ? Border.all(color: Theme.of(context).colorScheme.primary, width: 3) : null,
+              ),
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(color: cor, shape: BoxShape.circle),
+                child: Icon(icone, color: Colors.black87),
+              ),
             ),
           ),
         ),
