@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/storage/imagem_pedido_storage.dart';
+import '../../../core/widgets/valor_pagamento_input_formatter.dart';
 import '../data/pedido_repository.dart';
 import '../domain/pedido.dart';
 
@@ -140,6 +141,8 @@ class _EdicaoPedidoExecucaoScreenState extends State<EdicaoPedidoExecucaoScreen>
                 controller: _valorPagamentoController,
                 decoration: const InputDecoration(labelText: 'Valor Pagamento'),
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [ValorPagamentoInputFormatter()],
+                validator: validarValorPagamento,
               ),
               const SizedBox(height: 16),
               _buildImagem(),
