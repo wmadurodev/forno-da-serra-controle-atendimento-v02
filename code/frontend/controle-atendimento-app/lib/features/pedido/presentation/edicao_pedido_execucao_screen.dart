@@ -234,6 +234,14 @@ class _EdicaoPedidoExecucaoScreenState extends State<EdicaoPedidoExecucaoScreen>
       imagemPedidoRef: imagemPedidoRef,
       motivoCancelamento: widget.pedido.motivoCancelamento,
       motivoDevolucao: widget.pedido.motivoDevolucao,
+      dataHoraAguardandoAtendimento: widget.pedido.dataHoraAguardandoAtendimento,
+      dataHoraEmAtendimento: widget.pedido.dataHoraEmAtendimento,
+      dataHoraEmExecucao: widget.pedido.dataHoraEmExecucao,
+      dataHoraRetiradoNoBalcao: widget.pedido.dataHoraRetiradoNoBalcao,
+      dataHoraEnviado: widget.pedido.dataHoraEnviado,
+      dataHoraEntregue: widget.pedido.dataHoraEntregue,
+      dataHoraDevolvido: widget.pedido.dataHoraDevolvido,
+      dataHoraCancelamento: widget.pedido.dataHoraCancelamento,
     );
 
     final repository = context.read<PedidoRepository>();

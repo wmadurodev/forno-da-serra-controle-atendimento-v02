@@ -112,6 +112,14 @@ class Pedido {
     this.imagemPedidoRef,
     this.motivoCancelamento,
     this.motivoDevolucao,
+    this.dataHoraAguardandoAtendimento,
+    this.dataHoraEmAtendimento,
+    this.dataHoraEmExecucao,
+    this.dataHoraRetiradoNoBalcao,
+    this.dataHoraEnviado,
+    this.dataHoraEntregue,
+    this.dataHoraDevolvido,
+    this.dataHoraCancelamento,
   });
 
   final String identificador;
@@ -129,6 +137,34 @@ class Pedido {
   final String? imagemPedidoRef;
   final String? motivoCancelamento;
   final String? motivoDevolucao;
+
+  /// Data/hora em que cada estado foi alcançado, e do cancelamento — Passo 12.
+  /// Preenchidos uma única vez, na transição de entrada daquele estado.
+  final DateTime? dataHoraAguardandoAtendimento;
+  final DateTime? dataHoraEmAtendimento;
+  final DateTime? dataHoraEmExecucao;
+  final DateTime? dataHoraRetiradoNoBalcao;
+  final DateTime? dataHoraEnviado;
+  final DateTime? dataHoraEntregue;
+  final DateTime? dataHoraDevolvido;
+  final DateTime? dataHoraCancelamento;
+
+  /// Data/hora em que o pedido alcançou o `status` atual — usado no título
+  /// do card do Kanban (`docs/controle-atendimento-prototype.md` §4).
+  DateTime? get dataHoraStatusAtual => switch (status) {
+        PedidoStatus.aguardandoAtendimento => dataHoraAguardandoAtendimento,
+        PedidoStatus.emAtendimento => dataHoraEmAtendimento,
+        PedidoStatus.emExecucao => dataHoraEmExecucao,
+        PedidoStatus.retiradoNoBalcao => dataHoraRetiradoNoBalcao,
+        PedidoStatus.enviado => dataHoraEnviado,
+        PedidoStatus.entregue => dataHoraEntregue,
+        PedidoStatus.devolvido => dataHoraDevolvido,
+      };
+
+  static DateTime? _parseDataHora(Object? valor) {
+    if (valor is! String || valor.isEmpty) return null;
+    return DateTime.tryParse(valor);
+  }
 
   factory Pedido.fromMap(Map<String, Object?> map) {
     return Pedido(
@@ -151,6 +187,14 @@ class Pedido {
       imagemPedidoRef: map['imagem_pedido_ref'] as String?,
       motivoCancelamento: map['motivo_cancelamento'] as String?,
       motivoDevolucao: map['motivo_devolucao'] as String?,
+      dataHoraAguardandoAtendimento: _parseDataHora(map['data_hora_aguardando_atendimento']),
+      dataHoraEmAtendimento: _parseDataHora(map['data_hora_em_atendimento']),
+      dataHoraEmExecucao: _parseDataHora(map['data_hora_em_execucao']),
+      dataHoraRetiradoNoBalcao: _parseDataHora(map['data_hora_retirado_no_balcao']),
+      dataHoraEnviado: _parseDataHora(map['data_hora_enviado']),
+      dataHoraEntregue: _parseDataHora(map['data_hora_entregue']),
+      dataHoraDevolvido: _parseDataHora(map['data_hora_devolvido']),
+      dataHoraCancelamento: _parseDataHora(map['data_hora_cancelamento']),
     );
   }
 
@@ -171,6 +215,14 @@ class Pedido {
       'imagem_pedido_ref': imagemPedidoRef,
       'motivo_cancelamento': motivoCancelamento,
       'motivo_devolucao': motivoDevolucao,
+      'data_hora_aguardando_atendimento': dataHoraAguardandoAtendimento?.toIso8601String(),
+      'data_hora_em_atendimento': dataHoraEmAtendimento?.toIso8601String(),
+      'data_hora_em_execucao': dataHoraEmExecucao?.toIso8601String(),
+      'data_hora_retirado_no_balcao': dataHoraRetiradoNoBalcao?.toIso8601String(),
+      'data_hora_enviado': dataHoraEnviado?.toIso8601String(),
+      'data_hora_entregue': dataHoraEntregue?.toIso8601String(),
+      'data_hora_devolvido': dataHoraDevolvido?.toIso8601String(),
+      'data_hora_cancelamento': dataHoraCancelamento?.toIso8601String(),
     };
   }
 }

@@ -86,6 +86,14 @@ class _CancelamentoPedidoScreenState extends State<CancelamentoPedidoScreen> {
       imagemPedidoRef: pedidoOriginal.imagemPedidoRef,
       motivoCancelamento: motivo.isEmpty ? null : motivo,
       motivoDevolucao: pedidoOriginal.motivoDevolucao,
+      dataHoraAguardandoAtendimento: pedidoOriginal.dataHoraAguardandoAtendimento,
+      dataHoraEmAtendimento: pedidoOriginal.dataHoraEmAtendimento,
+      dataHoraEmExecucao: pedidoOriginal.dataHoraEmExecucao,
+      dataHoraRetiradoNoBalcao: pedidoOriginal.dataHoraRetiradoNoBalcao,
+      dataHoraEnviado: pedidoOriginal.dataHoraEnviado,
+      dataHoraEntregue: pedidoOriginal.dataHoraEntregue,
+      dataHoraDevolvido: pedidoOriginal.dataHoraDevolvido,
+      dataHoraCancelamento: pedidoOriginal.dataHoraCancelamento ?? DateTime.now(),
     );
 
     final repository = context.read<PedidoRepository>();

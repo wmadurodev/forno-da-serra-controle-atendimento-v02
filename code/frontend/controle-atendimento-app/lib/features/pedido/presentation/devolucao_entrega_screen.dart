@@ -113,6 +113,14 @@ class _DevolucaoEntregaScreenState extends State<DevolucaoEntregaScreen> {
       imagemPedidoRef: pedidoOriginal.imagemPedidoRef,
       motivoCancelamento: pedidoOriginal.motivoCancelamento,
       motivoDevolucao: _motivoController.text.trim(),
+      dataHoraAguardandoAtendimento: pedidoOriginal.dataHoraAguardandoAtendimento,
+      dataHoraEmAtendimento: pedidoOriginal.dataHoraEmAtendimento,
+      dataHoraEmExecucao: pedidoOriginal.dataHoraEmExecucao,
+      dataHoraRetiradoNoBalcao: pedidoOriginal.dataHoraRetiradoNoBalcao,
+      dataHoraEnviado: pedidoOriginal.dataHoraEnviado,
+      dataHoraEntregue: pedidoOriginal.dataHoraEntregue,
+      dataHoraDevolvido: pedidoOriginal.dataHoraDevolvido ?? DateTime.now(),
+      dataHoraCancelamento: pedidoOriginal.dataHoraCancelamento,
     );
 
     final repository = context.read<PedidoRepository>();

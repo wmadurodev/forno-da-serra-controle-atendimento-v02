@@ -36,27 +36,56 @@ class PedidoCard extends StatelessWidget {
   final VoidCallback onCancelar;
   final VoidCallback onDevolvido;
 
+  /// Formata `HH:mm` (hora local do dispositivo) — Passo 12.
+  static String _horaMinuto(DateTime dataHora) {
+    String pad2(int v) => v.toString().padLeft(2, '0');
+    return '${pad2(dataHora.hour)}:${pad2(dataHora.minute)}';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final dataHoraStatusAtual = pedido.dataHoraStatusAtual;
+    final titulo = dataHoraStatusAtual != null
+        ? '${pedido.identificador} (${_horaMinuto(dataHoraStatusAtual)})'
+        : pedido.identificador;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
+      color: pedido.cancelado ? Colors.red.shade50 : null,
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(pedido.identificador, style: Theme.of(context).textTheme.titleMedium),
-            if (pedido.cancelado)
-              const Padding(
-                padding: EdgeInsets.only(top: 4),
-                child: Text('cancelado', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-              ),
+            Text(titulo, style: Theme.of(context).textTheme.titleMedium),
+            if (pedido.cancelado) ..._camposCancelado(),
             ..._campos(),
             _buildFooter(context),
           ],
         ),
       ),
     );
+  }
+
+  List<Widget> _camposCancelado() {
+    final dataHoraCancelamento = pedido.dataHoraCancelamento;
+    final textoCancelado =
+        dataHoraCancelamento != null ? 'Cancelado (${_horaMinuto(dataHoraCancelamento)})' : 'Cancelado';
+    final widgets = <Widget>[
+      Padding(
+        padding: const EdgeInsets.only(top: 4),
+        child: Text(textoCancelado, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+      ),
+    ];
+    if (pedido.motivoCancelamento != null && pedido.motivoCancelamento!.isNotEmpty) {
+      widgets.add(
+        Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: Text(pedido.motivoCancelamento!, style: const TextStyle(color: Colors.red)),
+        ),
+      );
+    }
+    return widgets;
   }
 
   List<Widget> _campos() {

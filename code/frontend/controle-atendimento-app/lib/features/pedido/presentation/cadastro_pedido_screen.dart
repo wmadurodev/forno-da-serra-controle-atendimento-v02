@@ -256,6 +256,15 @@ class _CadastroPedidoScreenState extends State<CadastroPedidoScreen> {
       imagemPedidoRef: base?.imagemPedidoRef,
       motivoCancelamento: base?.motivoCancelamento,
       motivoDevolucao: base?.motivoDevolucao,
+      dataHoraAguardandoAtendimento: base?.dataHoraAguardandoAtendimento ?? DateTime.now(),
+      dataHoraEmAtendimento:
+          base?.dataHoraEmAtendimento ?? (novoStatus == PedidoStatus.emAtendimento ? DateTime.now() : null),
+      dataHoraEmExecucao: base?.dataHoraEmExecucao,
+      dataHoraRetiradoNoBalcao: base?.dataHoraRetiradoNoBalcao,
+      dataHoraEnviado: base?.dataHoraEnviado,
+      dataHoraEntregue: base?.dataHoraEntregue,
+      dataHoraDevolvido: base?.dataHoraDevolvido,
+      dataHoraCancelamento: base?.dataHoraCancelamento,
     );
 
     final repository = context.read<PedidoRepository>();

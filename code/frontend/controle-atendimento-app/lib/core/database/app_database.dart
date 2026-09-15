@@ -20,7 +20,7 @@ class AppDatabase {
 
     return openDatabase(
       dbPath,
-      version: 2,
+      version: 3,
       onConfigure: (db) => db.execute('PRAGMA foreign_keys = ON'),
       onCreate: (db, version) async {
         await db.execute('''
@@ -50,7 +50,15 @@ class AppDatabase {
             mesa TEXT,
             imagem_pedido_ref TEXT,
             motivo_cancelamento TEXT,
-            motivo_devolucao TEXT
+            motivo_devolucao TEXT,
+            data_hora_aguardando_atendimento TEXT,
+            data_hora_em_atendimento TEXT,
+            data_hora_em_execucao TEXT,
+            data_hora_retirado_no_balcao TEXT,
+            data_hora_enviado TEXT,
+            data_hora_entregue TEXT,
+            data_hora_devolvido TEXT,
+            data_hora_cancelamento TEXT
           )
         ''');
 
@@ -77,6 +85,22 @@ class AppDatabase {
             SELECT identificador, status FROM fluxo_atendimento_old ORDER BY rowid ASC
           ''');
           await db.execute('DROP TABLE fluxo_atendimento_old');
+        }
+        if (oldVersion < 3) {
+          // Passo 12: carimbos de data/hora de cada mudança de estado do
+          // Pedido, e do cancelamento. Nulos para pedidos já existentes.
+          for (final coluna in [
+            'data_hora_aguardando_atendimento',
+            'data_hora_em_atendimento',
+            'data_hora_em_execucao',
+            'data_hora_retirado_no_balcao',
+            'data_hora_enviado',
+            'data_hora_entregue',
+            'data_hora_devolvido',
+            'data_hora_cancelamento',
+          ]) {
+            await db.execute('ALTER TABLE pedido ADD COLUMN $coluna TEXT');
+          }
         }
       },
     );

@@ -53,12 +53,28 @@ class PedidoRepository {
     await db.delete(_table, where: 'identificador = ?', whereArgs: [pedido.identificador]);
   }
 
+  /// Coluna de data/hora correspondente à entrada em cada estado (Passo 12).
+  /// `null` para os estados cuja data/hora não é gravada por este método
+  /// (`aguardando_atendimento` e `em_atendimento`, gravados nas respectivas
+  /// telas de Cadastro/Execução).
+  static String? _colunaDataHora(PedidoStatus status) => switch (status) {
+        PedidoStatus.retiradoNoBalcao => 'data_hora_retirado_no_balcao',
+        PedidoStatus.enviado => 'data_hora_enviado',
+        PedidoStatus.entregue => 'data_hora_entregue',
+        PedidoStatus.devolvido => 'data_hora_devolvido',
+        PedidoStatus.aguardandoAtendimento || PedidoStatus.emAtendimento || PedidoStatus.emExecucao => null,
+      };
+
   Future<void> atualizarStatus(Pedido pedido, PedidoStatus novoStatus) async {
     await _garantirFluxoAberto(pedido.fluxoAtendimentoId);
     final db = await _appDatabase.database;
+    final coluna = _colunaDataHora(novoStatus);
     await db.update(
       _table,
-      {'status': novoStatus.value},
+      {
+        'status': novoStatus.value,
+        ?coluna: DateTime.now().toIso8601String(),
+      },
       where: 'identificador = ?',
       whereArgs: [pedido.identificador],
     );
