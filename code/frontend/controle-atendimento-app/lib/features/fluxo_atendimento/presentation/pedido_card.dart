@@ -165,7 +165,7 @@ class PedidoCard extends StatelessWidget {
     switch (pedido.status) {
       case PedidoStatus.aguardandoAtendimento:
         botoes = [
-          _acao(Icons.support_agent_outlined, 'Atendimento', onAtendimento),
+          _acao(Icons.support_agent_outlined, 'Atender', onAtendimento),
           _acao(Icons.delete_outline, 'Excluir', () => _confirmarExclusao(context)),
         ];
       case PedidoStatus.emAtendimento:
