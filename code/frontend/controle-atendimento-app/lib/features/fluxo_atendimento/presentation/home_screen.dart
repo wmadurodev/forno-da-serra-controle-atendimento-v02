@@ -8,6 +8,7 @@ import 'cadastro_fluxo_screen.dart';
 import 'excluir_fluxo_dialog.dart';
 import 'fechar_fluxo_dialog.dart';
 import 'home_controller.dart';
+import 'prestacao_contas_motoqueiro_dialog.dart';
 import 'quadro_atendimento_screen.dart';
 import 'valores_pagamento_dialog.dart';
 
@@ -81,6 +82,11 @@ class _HomeView extends StatelessWidget {
                   tooltip: 'Valores de Pagamento',
                   onPressed: () => _onValoresPagamento(context, fluxo),
                 ),
+                IconButton(
+                  icon: const Icon(Icons.two_wheeler),
+                  tooltip: 'Prestação de Contas com o Motoqueiro',
+                  onPressed: () => _onPrestacaoContasMotoqueiro(context, fluxo),
+                ),
                 if (aberto)
                   IconButton(
                     icon: const Icon(Icons.done_all),
@@ -113,6 +119,13 @@ class _HomeView extends StatelessWidget {
     await showDialog<void>(
       context: context,
       builder: (_) => ValoresPagamentoDialog(fluxo: fluxo),
+    );
+  }
+
+  Future<void> _onPrestacaoContasMotoqueiro(BuildContext context, FluxoAtendimento fluxo) async {
+    await showDialog<void>(
+      context: context,
+      builder: (_) => PrestacaoContasMotoqueiroDialog(fluxo: fluxo),
     );
   }
 

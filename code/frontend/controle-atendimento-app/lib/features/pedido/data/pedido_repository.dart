@@ -61,6 +61,24 @@ class PedidoRepository {
     return rows.map(Pedido.fromMap).toList();
   }
 
+  /// Pedidos `delivery` já enviados de um Fluxo de Atendimento (status
+  /// `enviado`, `entregue` ou `devolvido`) — Passo 33 (Home, popup de
+  /// Prestação de Contas com o Motoqueiro).
+  Future<List<Pedido>> listDelivery(String fluxoAtendimentoId) async {
+    final db = await _appDatabase.database;
+    final statusValidos = [PedidoStatus.enviado, PedidoStatus.entregue, PedidoStatus.devolvido]
+        .map((status) => status.value)
+        .toList();
+    final rows = await db.query(
+      _table,
+      where:
+          'fluxo_atendimento_id = ? AND tipo_entrega = ? AND status IN (${statusValidos.map((_) => '?').join(', ')})',
+      whereArgs: [fluxoAtendimentoId, TipoEntrega.delivery.value, ...statusValidos],
+      orderBy: 'identificador ASC',
+    );
+    return rows.map(Pedido.fromMap).toList();
+  }
+
   /// Busca de Pedidos (Passo 27, `functional.md` §5.5) — sempre dentro de um
   /// único Fluxo de Atendimento. Só `mesa` faz correspondência exata; os
   /// demais campos buscam por conteúdo parcial (`LIKE`).
