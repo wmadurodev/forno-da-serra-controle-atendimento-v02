@@ -145,7 +145,7 @@ class _ExecucaoPedidoScreenState extends State<ExecucaoPedidoScreen> {
 
     setState(() => _salvando = true);
 
-    final imagemPedidoRef = await ImagemPedidoStorage().salvar(widget.pedido.identificador, foto);
+    final imagemPedidoRef = await ImagemPedidoStorage().salvar(widget.pedido.id!, foto);
     if (!mounted) return;
 
     final restricoes = _restricoesController.text.trim();

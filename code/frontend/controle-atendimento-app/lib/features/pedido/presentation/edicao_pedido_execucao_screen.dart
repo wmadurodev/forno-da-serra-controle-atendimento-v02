@@ -209,7 +209,7 @@ class _EdicaoPedidoExecucaoScreenState extends State<EdicaoPedidoExecucaoScreen>
     var imagemPedidoRef = widget.pedido.imagemPedidoRef;
     final novaFoto = _novaFoto;
     if (novaFoto != null) {
-      imagemPedidoRef = await ImagemPedidoStorage().salvar(widget.pedido.identificador, novaFoto);
+      imagemPedidoRef = await ImagemPedidoStorage().salvar(widget.pedido.id!, novaFoto);
       if (!mounted) return;
     }
 
