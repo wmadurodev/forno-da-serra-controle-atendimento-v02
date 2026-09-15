@@ -10,33 +10,12 @@ import '../../pedido/presentation/devolucao_entrega_screen.dart';
 import '../../pedido/presentation/edicao_pedido_execucao_screen.dart';
 import '../../pedido/presentation/execucao_pedido_screen.dart';
 import '../domain/fluxo_atendimento.dart';
+import 'busca_pedidos_screen.dart';
+import 'fase_pedido_visual.dart';
 import 'filtro_pedidos_dialog.dart';
 import 'home_screen.dart';
 import 'pedido_card.dart';
 import 'quadro_atendimento_controller.dart';
-
-/// Fundo das colunas do Kanban: um único tom, escurecendo da coluna mais à
-/// esquerda para a mais à direita — Passo 13 (revisão a pedido do usuário:
-/// sem degradê, cor sólida por coluna). Usa `deepOrange`, a mesma base do
-/// `colorSchemeSeed` do app (`core/theme/app_theme.dart`), em vez de azul,
-/// para combinar com o restante da identidade visual do app.
-Color _corColuna(int index, int totalColunas) {
-  final t = totalColunas <= 1 ? 0.0 : index / (totalColunas - 1);
-  return Color.lerp(Colors.deepOrange.shade50, Colors.deepOrange.shade200, t)!;
-}
-
-/// Cor cinza sólida para as fases finais (`entregue`, `devolvido`,
-/// `retirado_no_balcao`) — Passo 26 (revisão: sem degradê, cor sólida como
-/// nas demais fases; `enviado` volta à cor laranja de `_corColuna`).
-/// Progressivamente mais escura entre si.
-Color? _corCinza(PedidoStatus status) {
-  return switch (status) {
-    PedidoStatus.entregue => Colors.grey.shade300,
-    PedidoStatus.devolvido => Colors.grey.shade400,
-    PedidoStatus.retiradoNoBalcao => Colors.grey.shade500,
-    _ => null,
-  };
-}
 
 /// Tela 4 — Execução do Fluxo de Atendimento
 /// (`docs/controle-atendimento-prototype.md` §3.4).
@@ -56,20 +35,6 @@ class QuadroAtendimentoScreen extends StatelessWidget {
     );
   }
 }
-
-/// Ícone sugestivo de cada fase — usado no navegador do footer (Passo 25)
-/// e no cabeçalho da coluna correspondente do Kanban (Passo 26). Ordem
-/// alinhada à de `PedidoStatus.values` (Passo 14, `retirado_no_balcao` por
-/// último).
-const _iconePorFase = {
-  PedidoStatus.aguardandoAtendimento: Icons.hourglass_empty,
-  PedidoStatus.emAtendimento: Icons.support_agent_outlined,
-  PedidoStatus.emExecucao: Icons.restaurant_outlined,
-  PedidoStatus.enviado: Icons.local_shipping_outlined,
-  PedidoStatus.entregue: Icons.check_circle_outline,
-  PedidoStatus.devolvido: Icons.assignment_return_outlined,
-  PedidoStatus.retiradoNoBalcao: Icons.storefront_outlined,
-};
 
 class _QuadroView extends StatefulWidget {
   const _QuadroView({required this.fluxo});
@@ -116,7 +81,7 @@ class _QuadroViewState extends State<_QuadroView> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             for (final status in PedidoStatus.values)
-              _iconeFase(status, _iconePorFase[status]!, controller.pedidosDe(status).length),
+              _iconeFase(status, iconePorFase[status]!, controller.pedidosDe(status).length),
           ],
         ),
       ),
@@ -125,7 +90,7 @@ class _QuadroViewState extends State<_QuadroView> {
 
   Widget _iconeFase(PedidoStatus status, IconData icone, int quantidade) {
     final indiceReal = PedidoStatus.values.indexOf(status);
-    final cor = _corCinza(status) ?? _corColuna(indiceReal, PedidoStatus.values.length);
+    final cor = corCinza(status) ?? corColuna(indiceReal, PedidoStatus.values.length);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -173,7 +138,7 @@ class _QuadroViewState extends State<_QuadroView> {
           IconButton.filledTonal(
             icon: const Icon(Icons.search),
             tooltip: 'Busca de Pedidos',
-            onPressed: () => _snack(context, 'Funcionalidade não implementada nesta fase'),
+            onPressed: () => _abrirBusca(context, controller),
           ),
           const SizedBox(width: 4),
           IconButton.filledTonal(
@@ -198,6 +163,18 @@ class _QuadroViewState extends State<_QuadroView> {
     }
   }
 
+  Future<void> _abrirBusca(BuildContext context, QuadroAtendimentoController controller) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => BuscaPedidosScreen(
+          fluxoAtendimentoId: fluxo.identificador,
+          somenteLeitura: _somenteLeitura,
+        ),
+      ),
+    );
+    await controller.load();
+  }
+
   Widget _buildQuadro(BuildContext context, QuadroAtendimentoController controller) {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -215,7 +192,7 @@ class _QuadroViewState extends State<_QuadroView> {
                   height: constraints.maxHeight,
                   child: _KanbanColuna(
                     status: status,
-                    cor: _corColuna(index, PedidoStatus.values.length),
+                    cor: corColuna(index, PedidoStatus.values.length),
                     pedidos: controller.pedidosDe(status),
                     somenteLeitura: _somenteLeitura,
                     controller: controller,
@@ -233,10 +210,6 @@ class _QuadroViewState extends State<_QuadroView> {
         );
       },
     );
-  }
-
-  void _snack(BuildContext context, String mensagem) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(mensagem)));
   }
 
   Future<void> _confirmarSaida(BuildContext context) async {
@@ -351,7 +324,7 @@ class _KanbanColuna extends StatelessWidget {
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: _corCinza(status) ?? cor,
+        color: corCinza(status) ?? cor,
         borderRadius: BorderRadius.circular(16),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -365,7 +338,7 @@ class _KanbanColuna extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(_iconePorFase[status], size: 18),
+                  Icon(iconePorFase[status], size: 18),
                   const SizedBox(width: 6),
                   Flexible(
                     child: Text(

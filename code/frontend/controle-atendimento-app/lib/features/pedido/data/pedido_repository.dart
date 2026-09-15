@@ -2,6 +2,10 @@ import '../../../core/database/app_database.dart';
 import '../../fluxo_atendimento/domain/fluxo_atendimento.dart';
 import '../domain/pedido.dart';
 
+/// Campos pesquisáveis na Busca de Pedidos (Passo 27, `functional.md` §5.5
+/// — estendido com `observacao` e `restricoes` a pedido do usuário).
+enum CampoBuscaPedido { identificador, nomeCliente, endereco, mesa, observacao, restricoes }
+
 /// Acesso à tabela `pedido`.
 ///
 /// Aplica a regra geral 3 de `docs/controle-atendimento-functional.md`
@@ -42,6 +46,28 @@ class PedidoRepository {
     );
     if (rows.isEmpty) return null;
     return Pedido.fromMap(rows.first);
+  }
+
+  /// Busca de Pedidos (Passo 27, `functional.md` §5.5) — sempre dentro de um
+  /// único Fluxo de Atendimento. Só `mesa` faz correspondência exata; os
+  /// demais campos buscam por conteúdo parcial (`LIKE`).
+  Future<List<Pedido>> buscar(String fluxoAtendimentoId, CampoBuscaPedido campo, String valor) async {
+    final coluna = switch (campo) {
+      CampoBuscaPedido.identificador => 'identificador',
+      CampoBuscaPedido.nomeCliente => 'nome_cliente',
+      CampoBuscaPedido.endereco => 'endereco',
+      CampoBuscaPedido.mesa => 'mesa',
+      CampoBuscaPedido.observacao => 'observacao',
+      CampoBuscaPedido.restricoes => 'restricoes',
+    };
+    final exata = campo == CampoBuscaPedido.mesa;
+    final db = await _appDatabase.database;
+    final rows = await db.query(
+      _table,
+      where: "fluxo_atendimento_id = ? AND $coluna ${exata ? '= ?' : 'LIKE ?'}",
+      whereArgs: [fluxoAtendimentoId, exata ? valor : '%$valor%'],
+    );
+    return rows.map(Pedido.fromMap).toList();
   }
 
   /// Cria ou atualiza o Pedido, por `id` — desde o Passo 18, `identificador`
