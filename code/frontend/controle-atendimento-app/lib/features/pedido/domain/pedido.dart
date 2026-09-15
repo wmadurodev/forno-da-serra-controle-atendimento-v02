@@ -97,6 +97,7 @@ enum TipoPagamento {
 /// Entidade Pedido — `docs/controle-atendimento-data-structure.md` §3.
 class Pedido {
   const Pedido({
+    this.id,
     required this.identificador,
     required this.fluxoAtendimentoId,
     required this.status,
@@ -122,6 +123,10 @@ class Pedido {
     this.dataHoraCancelamento,
   });
 
+  /// Chave técnica sequencial (`id INTEGER PRIMARY KEY AUTOINCREMENT`),
+  /// nula antes da persistência — Passo 17. Não é a chave de negócio
+  /// (ver `identificador`).
+  final int? id;
   final String identificador;
   final String fluxoAtendimentoId;
   final PedidoStatus status;
@@ -168,6 +173,7 @@ class Pedido {
 
   factory Pedido.fromMap(Map<String, Object?> map) {
     return Pedido(
+      id: map['id']! as int,
       identificador: map['identificador']! as String,
       fluxoAtendimentoId: map['fluxo_atendimento_id']! as String,
       status: PedidoStatus.fromValue(map['status']! as String),

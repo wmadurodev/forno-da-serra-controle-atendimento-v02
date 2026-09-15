@@ -1,5 +1,3 @@
-import 'package:sqflite/sqflite.dart';
-
 import '../../../core/database/app_database.dart';
 import '../../fluxo_atendimento/domain/fluxo_atendimento.dart';
 import '../domain/pedido.dart';
@@ -41,10 +39,25 @@ class PedidoRepository {
     return Pedido.fromMap(rows.first);
   }
 
+  /// Cria ou atualiza o Pedido. Não usa `conflictAlgorithm.replace` — desde
+  /// o Passo 17, `identificador` não é mais a `PRIMARY KEY` de `pedido`
+  /// (é `id`, sequencial), e `replace` faria um `DELETE`+`INSERT` a cada
+  /// edição, mudando o `id` da linha a cada gravação.
   Future<void> salvar(Pedido pedido) async {
     await _garantirFluxoAberto(pedido.fluxoAtendimentoId);
     final db = await _appDatabase.database;
-    await db.insert(_table, pedido.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+    final existente = await db.query(
+      _table,
+      columns: ['identificador'],
+      where: 'identificador = ?',
+      whereArgs: [pedido.identificador],
+      limit: 1,
+    );
+    if (existente.isEmpty) {
+      await db.insert(_table, pedido.toMap());
+    } else {
+      await db.update(_table, pedido.toMap(), where: 'identificador = ?', whereArgs: [pedido.identificador]);
+    }
   }
 
   Future<void> excluir(Pedido pedido) async {
