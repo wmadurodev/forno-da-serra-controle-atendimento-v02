@@ -44,12 +44,95 @@ class QuadroAtendimentoScreen extends StatelessWidget {
   }
 }
 
-class _QuadroView extends StatelessWidget {
+/// Ícone sugestivo de cada fase — usado no navegador do footer (Passo 25)
+/// e no cabeçalho da coluna correspondente do Kanban (Passo 26). Ordem
+/// alinhada à de `PedidoStatus.values` (Passo 14, `retirado_no_balcao` por
+/// último).
+const _iconePorFase = {
+  PedidoStatus.aguardandoAtendimento: Icons.hourglass_empty,
+  PedidoStatus.emAtendimento: Icons.support_agent_outlined,
+  PedidoStatus.emExecucao: Icons.restaurant_outlined,
+  PedidoStatus.enviado: Icons.local_shipping_outlined,
+  PedidoStatus.entregue: Icons.check_circle_outline,
+  PedidoStatus.devolvido: Icons.assignment_return_outlined,
+  PedidoStatus.retiradoNoBalcao: Icons.storefront_outlined,
+};
+
+class _QuadroView extends StatefulWidget {
   const _QuadroView({required this.fluxo});
 
   final FluxoAtendimento fluxo;
 
+  @override
+  State<_QuadroView> createState() => _QuadroViewState();
+}
+
+class _QuadroViewState extends State<_QuadroView> {
+  final _scrollController = ScrollController();
+
+  FluxoAtendimento get fluxo => widget.fluxo;
   bool get _somenteLeitura => fluxo.status == FluxoAtendimentoStatus.fechado;
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  /// Rola o Kanban horizontalmente até a coluna de `status` ficar alinhada
+  /// à esquerda da tela visível — Passo 25.
+  void _rolarParaFase(PedidoStatus status) {
+    final indice = PedidoStatus.values.indexOf(status);
+    const larguraColuna = 300.0;
+    const espacamento = 12.0;
+    const paddingInicial = 8.0;
+    final offsetAlvo = paddingInicial + indice * (larguraColuna + espacamento);
+    final maximo = _scrollController.position.maxScrollExtent;
+    _scrollController.animateTo(
+      offsetAlvo.clamp(0.0, maximo),
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  Widget _buildNavegadorFases(QuadroAtendimentoController controller) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            for (final status in PedidoStatus.values)
+              _iconeFase(status, _iconePorFase[status]!, controller.pedidosDe(status).length),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _iconeFase(PedidoStatus status, IconData icone, int quantidade) {
+    final indiceReal = PedidoStatus.values.indexOf(status);
+    final cor = _corColuna(indiceReal, PedidoStatus.values.length);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Tooltip(
+          message: status.titulo,
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: () => _rolarParaFase(status),
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(color: cor, shape: BoxShape.circle),
+              child: Icon(icone, color: Colors.black87),
+            ),
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text('$quantidade', style: TextStyle(fontSize: 11, color: Colors.grey.shade700)),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,6 +171,7 @@ class _QuadroView extends StatelessWidget {
         ],
       ),
       body: controller.loading ? const LoadingView() : _buildQuadro(context, controller),
+      bottomNavigationBar: _buildNavegadorFases(controller),
     );
   }
 
@@ -105,6 +189,7 @@ class _QuadroView extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         return SingleChildScrollView(
+          controller: _scrollController,
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Row(
@@ -261,10 +346,19 @@ class _KanbanColuna extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: SizedBox(
               width: double.infinity,
-              child: Text(
-                '${status.titulo} (${pedidos.length})',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleSmall,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(_iconePorFase[status], size: 18),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      '${status.titulo} (${pedidos.length})',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
