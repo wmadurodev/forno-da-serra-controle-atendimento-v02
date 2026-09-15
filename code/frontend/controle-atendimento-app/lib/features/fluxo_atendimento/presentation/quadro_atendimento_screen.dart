@@ -10,9 +10,20 @@ import '../../pedido/presentation/devolucao_entrega_screen.dart';
 import '../../pedido/presentation/edicao_pedido_execucao_screen.dart';
 import '../../pedido/presentation/execucao_pedido_screen.dart';
 import '../domain/fluxo_atendimento.dart';
+import 'filtro_pedidos_dialog.dart';
 import 'home_screen.dart';
 import 'pedido_card.dart';
 import 'quadro_atendimento_controller.dart';
+
+/// Fundo das colunas do Kanban: um único tom, escurecendo da coluna mais à
+/// esquerda para a mais à direita — Passo 13 (revisão a pedido do usuário:
+/// sem degradê, cor sólida por coluna). Usa `deepOrange`, a mesma base do
+/// `colorSchemeSeed` do app (`core/theme/app_theme.dart`), em vez de azul,
+/// para combinar com o restante da identidade visual do app.
+Color _corColuna(int index, int totalColunas) {
+  final t = totalColunas <= 1 ? 0.0 : index / (totalColunas - 1);
+  return Color.lerp(Colors.deepOrange.shade50, Colors.deepOrange.shade200, t)!;
+}
 
 /// Tela 4 — Execução do Fluxo de Atendimento
 /// (`docs/controle-atendimento-prototype.md` §3.4).
@@ -46,20 +57,30 @@ class _QuadroView extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text(fluxo.identificador),
         actions: [
-          if (!_somenteLeitura)
-            IconButton(
+          if (!_somenteLeitura) ...[
+            IconButton.filledTonal(
               icon: const Icon(Icons.add),
               tooltip: 'Novo Pedido',
               onPressed: () => _abrirCadastroPedido(context, controller),
             ),
-          IconButton(
+            const SizedBox(width: 4),
+          ],
+          IconButton.filledTonal(
+            icon: Icon(controller.filtro == FiltroPedidoVisualizacao.todos ? Icons.filter_list : Icons.filter_alt),
+            tooltip: 'Filtrar Pedidos',
+            onPressed: () => _abrirFiltro(context, controller),
+          ),
+          const SizedBox(width: 4),
+          IconButton.filledTonal(
             icon: const Icon(Icons.search),
             tooltip: 'Busca de Pedidos',
             onPressed: () => _snack(context, 'Funcionalidade não implementada nesta fase'),
           ),
-          IconButton(
+          const SizedBox(width: 4),
+          IconButton.filledTonal(
             icon: const Icon(Icons.logout),
             tooltip: 'Sair',
             onPressed: () => _confirmarSaida(context),
@@ -70,33 +91,46 @@ class _QuadroView extends StatelessWidget {
     );
   }
 
+  Future<void> _abrirFiltro(BuildContext context, QuadroAtendimentoController controller) async {
+    final novoFiltro = await showDialog<FiltroPedidoVisualizacao>(
+      context: context,
+      builder: (_) => FiltroPedidosDialog(filtroAtual: controller.filtro),
+    );
+    if (novoFiltro != null) {
+      controller.alterarFiltro(novoFiltro);
+    }
+  }
+
   Widget _buildQuadro(BuildContext context, QuadroAtendimentoController controller) {
     return LayoutBuilder(
       builder: (context, constraints) {
         return SingleChildScrollView(
           scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: PedidoStatus.values
-                .map(
-                  (status) => SizedBox(
-                    width: 300,
-                    height: constraints.maxHeight,
-                    child: _KanbanColuna(
-                      status: status,
-                      pedidos: controller.pedidosDe(status),
-                      somenteLeitura: _somenteLeitura,
-                      controller: controller,
-                      onAbrirCadastroPedido: (context, pedidoExistente) =>
-                          _abrirCadastroPedido(context, controller, pedidoExistente: pedidoExistente),
-                      onAbrirExecucaoPedido: (context, pedido) => _abrirExecucaoPedido(context, controller, pedido),
-                      onAbrirEdicaoExecucao: (context, pedido) => _abrirEdicaoExecucao(context, controller, pedido),
-                      onAbrirCancelamento: (context, pedido) => _abrirCancelamento(context, controller, pedido),
-                      onAbrirDevolucao: (context, pedido) => _abrirDevolucao(context, controller, pedido),
-                    ),
+            children: [
+              for (final (index, status) in PedidoStatus.values.indexed) ...[
+                if (index > 0) const SizedBox(width: 12),
+                SizedBox(
+                  width: 300,
+                  height: constraints.maxHeight,
+                  child: _KanbanColuna(
+                    status: status,
+                    cor: _corColuna(index, PedidoStatus.values.length),
+                    pedidos: controller.pedidosDe(status),
+                    somenteLeitura: _somenteLeitura,
+                    controller: controller,
+                    onAbrirCadastroPedido: (context, pedidoExistente) =>
+                        _abrirCadastroPedido(context, controller, pedidoExistente: pedidoExistente),
+                    onAbrirExecucaoPedido: (context, pedido) => _abrirExecucaoPedido(context, controller, pedido),
+                    onAbrirEdicaoExecucao: (context, pedido) => _abrirEdicaoExecucao(context, controller, pedido),
+                    onAbrirCancelamento: (context, pedido) => _abrirCancelamento(context, controller, pedido),
+                    onAbrirDevolucao: (context, pedido) => _abrirDevolucao(context, controller, pedido),
                   ),
-                )
-                .toList(),
+                ),
+              ],
+            ],
           ),
         );
       },
@@ -192,6 +226,7 @@ class _QuadroView extends StatelessWidget {
 class _KanbanColuna extends StatelessWidget {
   const _KanbanColuna({
     required this.status,
+    required this.cor,
     required this.pedidos,
     required this.somenteLeitura,
     required this.controller,
@@ -203,6 +238,7 @@ class _KanbanColuna extends StatelessWidget {
   });
 
   final PedidoStatus status;
+  final Color cor;
   final List<Pedido> pedidos;
   final bool somenteLeitura;
   final QuadroAtendimentoController controller;
@@ -214,16 +250,22 @@ class _KanbanColuna extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(color: cor, borderRadius: BorderRadius.circular(16)),
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Text(
-              '${status.titulo} (${pedidos.length})',
-              style: Theme.of(context).textTheme.titleSmall,
+            child: SizedBox(
+              width: double.infinity,
+              child: Text(
+                '${status.titulo} (${pedidos.length})',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
             ),
           ),
           Expanded(

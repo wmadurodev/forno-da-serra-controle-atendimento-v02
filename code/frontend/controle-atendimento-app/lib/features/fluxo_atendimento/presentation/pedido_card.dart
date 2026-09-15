@@ -51,7 +51,7 @@ class PedidoCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
-      color: pedido.cancelado ? Colors.red.shade50 : null,
+      color: pedido.cancelado ? Colors.red.shade100 : Colors.white,
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -74,14 +74,17 @@ class PedidoCard extends StatelessWidget {
     final widgets = <Widget>[
       Padding(
         padding: const EdgeInsets.only(top: 4),
-        child: Text(textoCancelado, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+        child: Text(
+          textoCancelado,
+          style: TextStyle(color: Colors.red.shade900, fontWeight: FontWeight.bold),
+        ),
       ),
     ];
     if (pedido.motivoCancelamento != null && pedido.motivoCancelamento!.isNotEmpty) {
       widgets.add(
         Padding(
           padding: const EdgeInsets.only(top: 2),
-          child: Text(pedido.motivoCancelamento!, style: const TextStyle(color: Colors.red)),
+          child: Text(pedido.motivoCancelamento!, style: TextStyle(color: Colors.red.shade900)),
         ),
       );
     }

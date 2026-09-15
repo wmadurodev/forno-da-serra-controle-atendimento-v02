@@ -86,7 +86,9 @@ Exemplo do enunciado: pedido `8979` criado em `aguardando_atendimento` às 13:23
 **Pedido cancelado:** substituir o texto fixo `'cancelado'` (linha atual, vermelho e negrito) por:
 - Uma linha `"Cancelado (HH:mm)"` usando `pedido.dataHoraCancelamento`, no mesmo estilo (vermelho, negrito).
 - Uma linha abaixo com o motivo (`pedido.motivoCancelamento`), se preenchido.
-- Cor de fundo do `Card` diferenciada quando `pedido.cancelado` (ex.: `Colors.red.shade50`), para distinguir visualmente de pedidos não cancelados — análogo à cor diferenciada de fluxo fechado do Passo 11.
+- Cor de fundo do `Card` diferenciada quando `pedido.cancelado`, para distinguir visualmente de pedidos não cancelados — análogo à cor diferenciada de fluxo fechado do Passo 11.
+
+**Revisão (2026-09-14, no contexto do Passo 13):** paleta de cores dos cards revista para não repetir a paleta de fundo das colunas do Kanban (`deepOrange`, Passo 13) e para acentuar mais o card cancelado: fundo branco (`Colors.white`) para pedidos não cancelados, `Colors.red.shade100` (antes `shade50`, mais acentuado) para cancelados; o texto "Cancelado (HH:mm)" e o motivo passam de `Colors.red` para `Colors.red.shade900`, mantendo contraste de leitura sobre o fundo mais saturado.
 
 O título do card (identificador + horário do estado atual) continua sendo exibido normalmente mesmo quando o pedido está cancelado — o bloco "Cancelado (HH:mm)" + motivo é adicional, exibido logo abaixo do título, como já ocorre hoje com o texto `'cancelado'`.
 
