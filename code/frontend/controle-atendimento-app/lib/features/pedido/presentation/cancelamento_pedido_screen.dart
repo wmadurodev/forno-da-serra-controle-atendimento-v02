@@ -73,6 +73,7 @@ class _CancelamentoPedidoScreenState extends State<CancelamentoPedidoScreen> {
     final motivo = _motivoController.text.trim();
     final pedidoOriginal = widget.pedido;
     final pedido = Pedido(
+      id: pedidoOriginal.id,
       identificador: pedidoOriginal.identificador,
       fluxoAtendimentoId: pedidoOriginal.fluxoAtendimentoId,
       status: pedidoOriginal.status,

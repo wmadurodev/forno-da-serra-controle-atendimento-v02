@@ -196,6 +196,10 @@ class _CadastroPedidoScreenState extends State<CadastroPedidoScreen> {
     );
   }
 
+  /// Busca o Pedido mais recente (qualquer fluxo) com este identificador e
+  /// usa seus dados de Cadastro como molde — Observação não é copiada.
+  /// Sempre resulta na criação de um Pedido novo (Passo 18): `_pedidoBase`
+  /// permanece nulo mesmo quando um molde é encontrado.
   Future<void> _onConfirmarIdentificador() async {
     if (!_identificadorFormKey.currentState!.validate()) return;
 
@@ -203,19 +207,18 @@ class _CadastroPedidoScreenState extends State<CadastroPedidoScreen> {
 
     final repository = context.read<PedidoRepository>();
     final identificador = _identificadorController.text.trim();
-    final encontrado = await repository.buscarPorIdentificador(widget.fluxoAtendimentoId, identificador);
+    final maisRecente = await repository.buscarMaisRecentePorIdentificador(identificador);
 
     if (!mounted) return;
     setState(() {
       _buscando = false;
-      _pedidoBase = encontrado;
+      _pedidoBase = null;
       _identificadorConfirmado = true;
-      if (encontrado != null) {
-        _nomeClienteController.text = encontrado.nomeCliente ?? '';
-        _tipoEntrega = encontrado.tipoEntrega;
-        _tipoPagamento = encontrado.tipoPagamento;
-        _enderecoController.text = encontrado.endereco ?? '';
-        _observacaoController.text = encontrado.observacao ?? '';
+      if (maisRecente != null) {
+        _nomeClienteController.text = maisRecente.nomeCliente ?? '';
+        _tipoEntrega = maisRecente.tipoEntrega;
+        _tipoPagamento = maisRecente.tipoPagamento;
+        _enderecoController.text = maisRecente.endereco ?? '';
       }
     });
   }
@@ -241,6 +244,7 @@ class _CadastroPedidoScreenState extends State<CadastroPedidoScreen> {
         : base.status;
 
     final pedido = Pedido(
+      id: base?.id,
       identificador: _identificadorController.text.trim(),
       fluxoAtendimentoId: widget.fluxoAtendimentoId,
       status: novoStatus,

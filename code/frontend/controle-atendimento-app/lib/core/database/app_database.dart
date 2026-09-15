@@ -20,7 +20,7 @@ class AppDatabase {
 
     return openDatabase(
       dbPath,
-      version: 4,
+      version: 5,
       onConfigure: (db) => db.execute('PRAGMA foreign_keys = ON'),
       onCreate: (db, version) async {
         await db.execute('''
@@ -34,7 +34,7 @@ class AppDatabase {
         await db.execute('''
           CREATE TABLE pedido (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            identificador TEXT NOT NULL UNIQUE,
+            identificador TEXT NOT NULL,
             fluxo_atendimento_id TEXT NOT NULL REFERENCES fluxo_atendimento(identificador),
             status TEXT NOT NULL CHECK (status IN (
               'aguardando_atendimento', 'em_atendimento', 'em_execucao',
@@ -158,6 +158,65 @@ class AppDatabase {
               data_hora_retirado_no_balcao, data_hora_enviado, data_hora_entregue,
               data_hora_devolvido, data_hora_cancelamento
             FROM pedido_old ORDER BY rowid ASC
+          ''');
+          await db.execute('DROP TABLE pedido_old');
+          await db.execute('CREATE INDEX idx_pedido_fluxo_atendimento_id ON pedido(fluxo_atendimento_id)');
+        }
+        if (oldVersion < 5) {
+          // Passo 18: identificador deixa de ser único — podem existir
+          // vários Pedidos com o mesmo identificador, inclusive no mesmo
+          // fluxo. Recria a tabela sem a constraint UNIQUE, preservando o
+          // `id` de cada linha explicitamente (já tem valores reais desde
+          // o Passo 17, não pode ser reatribuído por ordem de inserção).
+          await db.execute('ALTER TABLE pedido RENAME TO pedido_old');
+          await db.execute('''
+            CREATE TABLE pedido (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              identificador TEXT NOT NULL,
+              fluxo_atendimento_id TEXT NOT NULL REFERENCES fluxo_atendimento(identificador),
+              status TEXT NOT NULL CHECK (status IN (
+                'aguardando_atendimento', 'em_atendimento', 'em_execucao',
+                'retirado_no_balcao', 'enviado', 'entregue', 'devolvido'
+              )),
+              cancelado INTEGER NOT NULL DEFAULT 0,
+              nome_cliente TEXT,
+              tipo_entrega TEXT CHECK (tipo_entrega IN ('delivery', 'retirada_balcao')),
+              tipo_pagamento TEXT CHECK (tipo_pagamento IN ('pix', 'cartao', 'dinheiro')),
+              endereco TEXT,
+              observacao TEXT,
+              restricoes TEXT,
+              valor_pagamento REAL,
+              mesa TEXT,
+              imagem_pedido_ref TEXT,
+              motivo_cancelamento TEXT,
+              motivo_devolucao TEXT,
+              data_hora_aguardando_atendimento TEXT,
+              data_hora_em_atendimento TEXT,
+              data_hora_em_execucao TEXT,
+              data_hora_retirado_no_balcao TEXT,
+              data_hora_enviado TEXT,
+              data_hora_entregue TEXT,
+              data_hora_devolvido TEXT,
+              data_hora_cancelamento TEXT
+            )
+          ''');
+          await db.execute('''
+            INSERT INTO pedido (
+              id, identificador, fluxo_atendimento_id, status, cancelado, nome_cliente,
+              tipo_entrega, tipo_pagamento, endereco, observacao, restricoes,
+              valor_pagamento, mesa, imagem_pedido_ref, motivo_cancelamento, motivo_devolucao,
+              data_hora_aguardando_atendimento, data_hora_em_atendimento, data_hora_em_execucao,
+              data_hora_retirado_no_balcao, data_hora_enviado, data_hora_entregue,
+              data_hora_devolvido, data_hora_cancelamento
+            )
+            SELECT
+              id, identificador, fluxo_atendimento_id, status, cancelado, nome_cliente,
+              tipo_entrega, tipo_pagamento, endereco, observacao, restricoes,
+              valor_pagamento, mesa, imagem_pedido_ref, motivo_cancelamento, motivo_devolucao,
+              data_hora_aguardando_atendimento, data_hora_em_atendimento, data_hora_em_execucao,
+              data_hora_retirado_no_balcao, data_hora_enviado, data_hora_entregue,
+              data_hora_devolvido, data_hora_cancelamento
+            FROM pedido_old
           ''');
           await db.execute('DROP TABLE pedido_old');
           await db.execute('CREATE INDEX idx_pedido_fluxo_atendimento_id ON pedido(fluxo_atendimento_id)');

@@ -100,6 +100,7 @@ class _DevolucaoEntregaScreenState extends State<DevolucaoEntregaScreen> {
 
     final pedidoOriginal = widget.pedido;
     final pedido = Pedido(
+      id: pedidoOriginal.id,
       identificador: pedidoOriginal.identificador,
       fluxoAtendimentoId: pedidoOriginal.fluxoAtendimentoId,
       status: PedidoStatus.devolvido,

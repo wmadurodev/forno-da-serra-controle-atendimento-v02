@@ -219,6 +219,7 @@ class _EdicaoPedidoExecucaoScreenState extends State<EdicaoPedidoExecucaoScreen>
     final valorPagamento = double.tryParse(_valorPagamentoController.text.trim().replaceAll(',', '.'));
 
     final pedido = Pedido(
+      id: widget.pedido.id,
       identificador: widget.pedido.identificador,
       fluxoAtendimentoId: widget.pedido.fluxoAtendimentoId,
       status: widget.pedido.status,

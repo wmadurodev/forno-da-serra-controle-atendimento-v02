@@ -27,43 +27,40 @@ class PedidoRepository {
     return rows.map(Pedido.fromMap).toList();
   }
 
-  Future<Pedido?> buscarPorIdentificador(String fluxoAtendimentoId, String identificador) async {
+  /// Pedido mais recente (maior `id`) com este identificador, em qualquer
+  /// Fluxo de Atendimento — usado como molde de Cadastro para um Pedido
+  /// novo (Passo 18). `identificador` não é mais único (nem globalmente,
+  /// nem por fluxo), por isso a busca é sempre "o mais recente".
+  Future<Pedido?> buscarMaisRecentePorIdentificador(String identificador) async {
     final db = await _appDatabase.database;
     final rows = await db.query(
       _table,
-      where: 'fluxo_atendimento_id = ? AND identificador = ?',
-      whereArgs: [fluxoAtendimentoId, identificador],
+      where: 'identificador = ?',
+      whereArgs: [identificador],
+      orderBy: 'id DESC',
       limit: 1,
     );
     if (rows.isEmpty) return null;
     return Pedido.fromMap(rows.first);
   }
 
-  /// Cria ou atualiza o Pedido. Não usa `conflictAlgorithm.replace` — desde
-  /// o Passo 17, `identificador` não é mais a `PRIMARY KEY` de `pedido`
-  /// (é `id`, sequencial), e `replace` faria um `DELETE`+`INSERT` a cada
-  /// edição, mudando o `id` da linha a cada gravação.
+  /// Cria ou atualiza o Pedido, por `id` — desde o Passo 18, `identificador`
+  /// não identifica uma linha unicamente (pode haver vários Pedidos com o
+  /// mesmo identificador).
   Future<void> salvar(Pedido pedido) async {
     await _garantirFluxoAberto(pedido.fluxoAtendimentoId);
     final db = await _appDatabase.database;
-    final existente = await db.query(
-      _table,
-      columns: ['identificador'],
-      where: 'identificador = ?',
-      whereArgs: [pedido.identificador],
-      limit: 1,
-    );
-    if (existente.isEmpty) {
+    if (pedido.id == null) {
       await db.insert(_table, pedido.toMap());
     } else {
-      await db.update(_table, pedido.toMap(), where: 'identificador = ?', whereArgs: [pedido.identificador]);
+      await db.update(_table, pedido.toMap(), where: 'id = ?', whereArgs: [pedido.id]);
     }
   }
 
   Future<void> excluir(Pedido pedido) async {
     await _garantirFluxoAberto(pedido.fluxoAtendimentoId);
     final db = await _appDatabase.database;
-    await db.delete(_table, where: 'identificador = ?', whereArgs: [pedido.identificador]);
+    await db.delete(_table, where: 'id = ?', whereArgs: [pedido.id]);
   }
 
   /// Coluna de data/hora correspondente à entrada em cada estado (Passo 12).
@@ -88,8 +85,8 @@ class PedidoRepository {
         'status': novoStatus.value,
         ?coluna: DateTime.now().toIso8601String(),
       },
-      where: 'identificador = ?',
-      whereArgs: [pedido.identificador],
+      where: 'id = ?',
+      whereArgs: [pedido.id],
     );
   }
 
