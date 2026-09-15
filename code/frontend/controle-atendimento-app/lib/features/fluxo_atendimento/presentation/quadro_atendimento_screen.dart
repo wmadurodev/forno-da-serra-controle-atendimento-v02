@@ -51,10 +51,12 @@ class _QuadroViewState extends State<_QuadroView> {
   static const _paddingInicial = 8.0;
 
   final _scrollController = ScrollController();
+  late final QuadroAtendimentoController _controller;
+  bool _carregandoAnterior = true;
 
   /// Índice (em `PedidoStatus.values`) da coluna considerada visível no
   /// momento — usado para destacar o ícone correspondente no footer
-  /// (Passo 28).
+  /// (Passo 28) e para restaurar a rolagem após um refresh (Passo 39).
   int _indiceFaseVisivel = 0;
 
   FluxoAtendimento get fluxo => widget.fluxo;
@@ -64,13 +66,36 @@ class _QuadroViewState extends State<_QuadroView> {
   void initState() {
     super.initState();
     _scrollController.addListener(_atualizarFaseVisivel);
+    _controller = context.read<QuadroAtendimentoController>();
+    _controller.addListener(_aoAtualizarController);
   }
 
   @override
   void dispose() {
     _scrollController.removeListener(_atualizarFaseVisivel);
+    _controller.removeListener(_aoAtualizarController);
     _scrollController.dispose();
     super.dispose();
+  }
+
+  /// Detecta a transição `loading: true -> false` (fim de um
+  /// `QuadroAtendimentoController.load()`, disparado ao fechar qualquer
+  /// diálogo/formulário sobre o Kanban) e restaura a rolagem na coluna que
+  /// estava visível antes do refresh — Passo 39. Sem isso, `build` desmonta
+  /// o `SingleChildScrollView` enquanto `loading == true` (troca por
+  /// `LoadingView`) e ele remonta em offset 0 ao voltar para `false`.
+  void _aoAtualizarController() {
+    if (_carregandoAnterior && !_controller.loading) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _restaurarPosicaoScroll());
+    }
+    _carregandoAnterior = _controller.loading;
+  }
+
+  void _restaurarPosicaoScroll() {
+    if (!_scrollController.hasClients) return;
+    final offsetAlvo = _paddingInicial + _indiceFaseVisivel * (_larguraColuna + _espacamento);
+    final maximo = _scrollController.position.maxScrollExtent;
+    _scrollController.jumpTo(offsetAlvo.clamp(0.0, maximo));
   }
 
   /// Rola o Kanban horizontalmente até a coluna de `status` ficar alinhada
