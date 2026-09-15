@@ -4,10 +4,20 @@ import 'package:flutter/material.dart';
 /// arrastado até o final do percurso — usado para confirmar ações
 /// destrutivas/irreversíveis sem risco de toque acidental.
 class SlideToConfirmButton extends StatefulWidget {
-  const SlideToConfirmButton({super.key, required this.label, required this.onConfirmed});
+  const SlideToConfirmButton({
+    super.key,
+    required this.label,
+    required this.onConfirmed,
+    this.enabled = true,
+  });
 
   final String label;
   final VoidCallback onConfirmed;
+
+  /// Quando `false`, o controle não responde a arrastos e usa uma cor
+  /// neutra em vez da cor de ação destrutiva — Passo 37 (confirmação de
+  /// exclusão de fluxo em 2 fases sequenciais).
+  final bool enabled;
 
   @override
   State<SlideToConfirmButton> createState() => _SlideToConfirmButtonState();
@@ -31,24 +41,31 @@ class _SlideToConfirmButtonState extends State<SlideToConfirmButton> {
         return Container(
           height: _thumbSize,
           decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerHighest,
+            color: widget.enabled
+                ? colorScheme.surfaceContainerHighest
+                : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(_thumbSize / 2),
           ),
           child: Stack(
             alignment: Alignment.center,
             children: [
-              Text(widget.label, style: TextStyle(color: colorScheme.onSurfaceVariant)),
+              Text(
+                widget.label,
+                style: TextStyle(
+                  color: widget.enabled ? colorScheme.onSurfaceVariant : colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                ),
+              ),
               Positioned(
                 left: _posicao,
                 child: GestureDetector(
                   onHorizontalDragUpdate: (details) {
-                    if (_confirmado) return;
+                    if (!widget.enabled || _confirmado) return;
                     setState(() {
                       _posicao = (_posicao + details.delta.dx).clamp(0, percursoMaximo);
                     });
                   },
                   onHorizontalDragEnd: (details) {
-                    if (_confirmado) return;
+                    if (!widget.enabled || _confirmado) return;
                     if (_posicao >= percursoMaximo * _limiarConfirmacao) {
                       setState(() {
                         _posicao = percursoMaximo;
@@ -62,8 +79,14 @@ class _SlideToConfirmButtonState extends State<SlideToConfirmButton> {
                   child: Container(
                     width: _thumbSize,
                     height: _thumbSize,
-                    decoration: BoxDecoration(shape: BoxShape.circle, color: colorScheme.error),
-                    child: Icon(Icons.arrow_forward, color: colorScheme.onError),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: widget.enabled ? colorScheme.error : Colors.grey.shade400,
+                    ),
+                    child: Icon(
+                      Icons.arrow_forward,
+                      color: widget.enabled ? colorScheme.onError : Colors.grey.shade700,
+                    ),
                   ),
                 ),
               ),

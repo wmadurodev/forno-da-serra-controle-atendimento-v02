@@ -11,10 +11,19 @@ import '../domain/fluxo_atendimento.dart';
 ///
 /// Retorna `true` (via `Navigator.pop`) se confirmado, `false`/`null` se
 /// descartado pelo ícone de fechar.
-class ExcluirFluxoDialog extends StatelessWidget {
+class ExcluirFluxoDialog extends StatefulWidget {
   const ExcluirFluxoDialog({super.key, required this.fluxo});
 
   final FluxoAtendimento fluxo;
+
+  @override
+  State<ExcluirFluxoDialog> createState() => _ExcluirFluxoDialogState();
+}
+
+class _ExcluirFluxoDialogState extends State<ExcluirFluxoDialog> {
+  /// Passo 37: exclusão exige 2 arrastos sequenciais; a Fase 2 só é
+  /// habilitada depois que a Fase 1 é concluída.
+  bool _fase1Confirmada = false;
 
   @override
   Widget build(BuildContext context) {
@@ -43,13 +52,19 @@ class ExcluirFluxoDialog extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Arraste até o final para excluir definitivamente o fluxo '
-              '"${fluxo.identificador}" e TODOS os seus pedidos. '
+              'Arraste até o final, nas 2 etapas abaixo, para excluir definitivamente o fluxo '
+              '"${widget.fluxo.identificador}" e TODOS os seus pedidos. '
               'Essa ação não pode ser desfeita.',
             ),
             const SizedBox(height: 24),
             SlideToConfirmButton(
-              label: 'Arraste para excluir',
+              label: 'Arraste para excluir - Fase 1',
+              onConfirmed: () => setState(() => _fase1Confirmada = true),
+            ),
+            const SizedBox(height: 12),
+            SlideToConfirmButton(
+              label: 'Arraste para excluir - Fase 2',
+              enabled: _fase1Confirmada,
               onConfirmed: () => Navigator.of(context).pop(true),
             ),
           ],
