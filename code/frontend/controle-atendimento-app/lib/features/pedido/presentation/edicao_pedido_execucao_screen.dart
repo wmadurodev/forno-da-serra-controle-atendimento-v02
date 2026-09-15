@@ -191,7 +191,7 @@ class _EdicaoPedidoExecucaoScreenState extends State<EdicaoPedidoExecucaoScreen>
           child: OutlinedButton.icon(
             onPressed: _salvando ? null : _onTirarFoto,
             icon: const Icon(Icons.camera_alt),
-            label: const Text('Tirar Outra Foto'),
+            label: const Text('Tirar Foto'),
           ),
         ),
       ],

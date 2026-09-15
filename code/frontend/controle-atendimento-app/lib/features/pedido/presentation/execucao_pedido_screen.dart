@@ -28,7 +28,6 @@ class _ExecucaoPedidoScreenState extends State<ExecucaoPedidoScreen> {
 
   File? _foto;
   bool _salvando = false;
-  String? _erroFoto;
 
   @override
   void dispose() {
@@ -111,17 +110,12 @@ class _ExecucaoPedidoScreenState extends State<ExecucaoPedidoScreen> {
             borderRadius: BorderRadius.circular(8),
             child: Image.file(_foto!, height: 200, fit: BoxFit.cover),
           ),
-        if (_erroFoto != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Text(_erroFoto!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
-          ),
         Padding(
           padding: const EdgeInsets.only(top: 8),
           child: OutlinedButton.icon(
             onPressed: _salvando ? null : _onTirarFoto,
             icon: const Icon(Icons.camera_alt),
-            label: Text(_foto == null ? 'Tirar Foto' : 'Tirar Outra Foto'),
+            label: const Text('Tirar Foto'),
           ),
         ),
       ],
@@ -131,25 +125,20 @@ class _ExecucaoPedidoScreenState extends State<ExecucaoPedidoScreen> {
   Future<void> _onTirarFoto() async {
     final imagem = await ImagePicker().pickImage(source: ImageSource.camera);
     if (imagem == null) return;
-    setState(() {
-      _foto = File(imagem.path);
-      _erroFoto = null;
-    });
+    setState(() => _foto = File(imagem.path));
   }
 
   Future<void> _onGravar() async {
-    final formValido = _formKey.currentState!.validate();
-    final foto = _foto;
-
-    if (foto == null) {
-      setState(() => _erroFoto = 'A foto do pedido é obrigatória');
-    }
-    if (!formValido || foto == null) return;
+    if (!_formKey.currentState!.validate()) return;
 
     setState(() => _salvando = true);
 
-    final imagemPedidoRef = await ImagemPedidoStorage().salvar(widget.pedido.id!, foto);
-    if (!mounted) return;
+    final foto = _foto;
+    String? imagemPedidoRef;
+    if (foto != null) {
+      imagemPedidoRef = await ImagemPedidoStorage().salvar(widget.pedido.id!, foto);
+      if (!mounted) return;
+    }
 
     final restricoes = _restricoesController.text.trim();
     final valorPagamento = double.tryParse(_valorPagamentoController.text.trim().replaceAll(',', '.'));
