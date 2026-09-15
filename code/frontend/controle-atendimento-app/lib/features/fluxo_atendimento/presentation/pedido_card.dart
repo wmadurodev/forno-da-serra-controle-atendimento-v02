@@ -165,52 +165,28 @@ class PedidoCard extends StatelessWidget {
     switch (pedido.status) {
       case PedidoStatus.aguardandoAtendimento:
         botoes = [
-          IconButton(
-            icon: const Icon(Icons.support_agent_outlined),
-            tooltip: 'Atendimento',
-            onPressed: onAtendimento,
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete_outline),
-            tooltip: 'Excluir',
-            onPressed: () => _confirmarExclusao(context),
-          ),
+          _acao(Icons.support_agent_outlined, 'Atendimento', onAtendimento),
+          _acao(Icons.delete_outline, 'Excluir', () => _confirmarExclusao(context)),
         ];
       case PedidoStatus.emAtendimento:
         botoes = [
-          IconButton(icon: const Icon(Icons.play_circle_outline), tooltip: 'Executar', onPressed: onExecutar),
-          IconButton(icon: const Icon(Icons.edit_outlined), tooltip: 'Editar', onPressed: onEditarCadastro),
-          IconButton(icon: const Icon(Icons.cancel_outlined), tooltip: 'Cancelar', onPressed: onCancelar),
+          _acao(Icons.play_circle_outline, 'Executar', onExecutar),
+          _acao(Icons.edit_outlined, 'Editar', onEditarCadastro),
+          _acao(Icons.cancel_outlined, 'Cancelar', onCancelar),
         ];
       case PedidoStatus.emExecucao:
         botoes = [
           if (pedido.tipoEntrega == TipoEntrega.delivery)
-            IconButton(
-              icon: const Icon(Icons.local_shipping_outlined),
-              tooltip: 'Enviado',
-              onPressed: () => onEnviado(),
-            )
+            _acao(Icons.local_shipping_outlined, 'Enviado', () => onEnviado())
           else
-            IconButton(
-              icon: const Icon(Icons.storefront_outlined),
-              tooltip: 'Retirado',
-              onPressed: () => onRetirado(),
-            ),
-          IconButton(icon: const Icon(Icons.edit_outlined), tooltip: 'Editar', onPressed: onEditarExecucao),
-          IconButton(icon: const Icon(Icons.cancel_outlined), tooltip: 'Cancelar', onPressed: onCancelar),
+            _acao(Icons.storefront_outlined, 'Retirado', () => onRetirado()),
+          _acao(Icons.edit_outlined, 'Editar', onEditarExecucao),
+          _acao(Icons.cancel_outlined, 'Cancelar', onCancelar),
         ];
       case PedidoStatus.enviado:
         botoes = [
-          IconButton(
-            icon: const Icon(Icons.check_circle_outline),
-            tooltip: 'Entregue',
-            onPressed: () => onEntregue(),
-          ),
-          IconButton(
-            icon: const Icon(Icons.assignment_return_outlined),
-            tooltip: 'Devolvido',
-            onPressed: onDevolvido,
-          ),
+          _acao(Icons.check_circle_outline, 'Entregue', () => onEntregue()),
+          _acao(Icons.assignment_return_outlined, 'Devolvido', onDevolvido),
         ];
       case PedidoStatus.retiradoNoBalcao:
       case PedidoStatus.entregue:
@@ -227,6 +203,25 @@ class PedidoCard extends StatelessWidget {
           spacing: 8,
           runSpacing: 8,
           children: botoes,
+        ),
+      ),
+    );
+  }
+
+  /// Ícone de ação com o nome da ação em cinza logo abaixo — Passo 15.
+  Widget _acao(IconData icone, String rotulo, VoidCallback? onPressed) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icone),
+            const SizedBox(height: 2),
+            Text(rotulo, style: TextStyle(fontSize: 11, color: Colors.grey.shade700)),
+          ],
         ),
       ),
     );
