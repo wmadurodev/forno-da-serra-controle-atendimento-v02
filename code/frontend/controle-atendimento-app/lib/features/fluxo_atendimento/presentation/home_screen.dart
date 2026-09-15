@@ -77,23 +77,23 @@ class _HomeView extends StatelessWidget {
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                IconButton(
+                IconButton.filledTonal(
                   icon: const Icon(Icons.attach_money),
                   tooltip: 'Valores de Pagamento',
                   onPressed: () => _onValoresPagamento(context, fluxo),
                 ),
-                IconButton(
+                IconButton.filledTonal(
                   icon: const Icon(Icons.two_wheeler),
                   tooltip: 'Prestação de Contas com o Motoqueiro',
                   onPressed: () => _onPrestacaoContasMotoqueiro(context, fluxo),
                 ),
                 if (aberto)
-                  IconButton(
+                  IconButton.filledTonal(
                     icon: const Icon(Icons.done_all),
                     tooltip: 'Fechar Fluxo de Atendimento',
                     onPressed: () => _onFecharFluxo(context, fluxo),
                   ),
-                IconButton(
+                IconButton.filledTonal(
                   icon: const Icon(Icons.delete_outline),
                   tooltip: 'Excluir Fluxo de Atendimento',
                   onPressed: () => _onExcluirFluxo(context, fluxo),
