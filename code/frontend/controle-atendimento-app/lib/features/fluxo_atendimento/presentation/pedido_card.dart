@@ -177,15 +177,42 @@ class PedidoCard extends StatelessWidget {
       case PedidoStatus.emExecucao:
         botoes = [
           if (pedido.tipoEntrega == TipoEntrega.delivery)
-            _acao(Icons.local_shipping_outlined, 'Enviado', () => onEnviado())
+            _acao(
+              Icons.local_shipping_outlined,
+              'Enviar',
+              () => _confirmarAcao(
+                context,
+                titulo: 'Enviar Pedido',
+                mensagem: 'Confirma o envio do pedido "${pedido.identificador}"?',
+                acao: onEnviado,
+              ),
+            )
           else
-            _acao(Icons.storefront_outlined, 'Retirado', () => onRetirado()),
+            _acao(
+              Icons.storefront_outlined,
+              'Retirado',
+              () => _confirmarAcao(
+                context,
+                titulo: 'Retirado',
+                mensagem: 'Confirma que o pedido "${pedido.identificador}" foi retirado no balcão?',
+                acao: onRetirado,
+              ),
+            ),
           _acao(Icons.edit_outlined, 'Editar', onEditarExecucao),
           _acao(Icons.cancel_outlined, 'Cancelar', onCancelar),
         ];
       case PedidoStatus.enviado:
         botoes = [
-          _acao(Icons.check_circle_outline, 'Entregue', () => onEntregue()),
+          _acao(
+            Icons.check_circle_outline,
+            'Entregue',
+            () => _confirmarAcao(
+              context,
+              titulo: 'Entregue',
+              mensagem: 'Confirma que o pedido "${pedido.identificador}" foi entregue?',
+              acao: onEntregue,
+            ),
+          ),
           _acao(Icons.assignment_return_outlined, 'Devolvido', onDevolvido),
         ];
       case PedidoStatus.retiradoNoBalcao:
@@ -242,6 +269,31 @@ class PedidoCard extends StatelessWidget {
 
     if (confirmar == true) {
       await onExcluir();
+    }
+  }
+
+  /// Diálogo de confirmação simples e nativo (Passo 24) — usado antes de
+  /// "Enviar", "Retirado" e "Entregue".
+  Future<void> _confirmarAcao(
+    BuildContext context, {
+    required String titulo,
+    required String mensagem,
+    required Future<void> Function() acao,
+  }) async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(titulo),
+        content: Text(mensagem),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: const Text('Cancelar')),
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(true), child: const Text('Confirmar')),
+        ],
+      ),
+    );
+
+    if (confirmar == true) {
+      await acao();
     }
   }
 }
