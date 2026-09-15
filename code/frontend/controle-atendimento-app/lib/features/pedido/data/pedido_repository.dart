@@ -48,13 +48,14 @@ class PedidoRepository {
     return Pedido.fromMap(rows.first);
   }
 
-  /// Pedidos com valor de pagamento lançado, dentro de um Fluxo de
-  /// Atendimento — Passo 29 (Home, popup de Valores de Pagamento).
+  /// Pedidos não cancelados com valor de pagamento lançado, dentro de um
+  /// Fluxo de Atendimento — Passo 29 (Home, popup de Valores de Pagamento);
+  /// exclusão dos cancelados adicionada no Passo 34.
   Future<List<Pedido>> listComValorPagamento(String fluxoAtendimentoId) async {
     final db = await _appDatabase.database;
     final rows = await db.query(
       _table,
-      where: 'fluxo_atendimento_id = ? AND valor_pagamento IS NOT NULL',
+      where: 'fluxo_atendimento_id = ? AND valor_pagamento IS NOT NULL AND cancelado = 0',
       whereArgs: [fluxoAtendimentoId],
       orderBy: 'identificador ASC',
     );
