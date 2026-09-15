@@ -3,10 +3,10 @@ enum PedidoStatus {
   aguardandoAtendimento,
   emAtendimento,
   emExecucao,
-  retiradoNoBalcao,
   enviado,
   entregue,
-  devolvido;
+  devolvido,
+  retiradoNoBalcao; // movido para o final da coluna do Kanban — Passo 14.
 
   String get value => switch (this) {
         PedidoStatus.aguardandoAtendimento => 'aguardando_atendimento',

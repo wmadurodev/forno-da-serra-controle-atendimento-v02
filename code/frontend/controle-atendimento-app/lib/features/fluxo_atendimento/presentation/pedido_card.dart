@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import '../../pedido/domain/pedido.dart';
+import 'imagem_pedido_tela_cheia.dart';
 
 /// Card de Pedido exibido nas colunas do quadro Kanban da Tela 4
 /// (`docs/controle-atendimento-prototype.md` §4).
@@ -59,7 +60,7 @@ class PedidoCard extends StatelessWidget {
           children: [
             Text(titulo, style: Theme.of(context).textTheme.titleMedium),
             if (pedido.cancelado) ..._camposCancelado(),
-            ..._campos(),
+            ..._campos(context),
             _buildFooter(context),
           ],
         ),
@@ -91,48 +92,68 @@ class PedidoCard extends StatelessWidget {
     return widgets;
   }
 
-  List<Widget> _campos() {
+  /// Lista única de campos, sem distinção por status: cada um só aparece
+  /// se tiver valor — Passo 14. Ordem: Cliente, Mesa, Entrega, Endereço,
+  /// Pagamento, Observação, Restrições, Imagem, Motivo da Devolução.
+  List<Widget> _campos(BuildContext context) {
     final widgets = <Widget>[];
 
-    void add(String label, String? valor) {
+    void campo(IconData icone, String? valor, {bool negrito = false}) {
       if (valor == null || valor.isEmpty) return;
-      widgets.add(Padding(padding: const EdgeInsets.only(top: 4), child: Text('$label: $valor')));
+      widgets.add(
+        Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icone, size: 16, color: Colors.black54),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(valor, style: negrito ? const TextStyle(fontWeight: FontWeight.bold) : null),
+              ),
+            ],
+          ),
+        ),
+      );
     }
 
-    switch (pedido.status) {
-      case PedidoStatus.aguardandoAtendimento:
-        break;
-      case PedidoStatus.emAtendimento:
-        add('Cliente', pedido.nomeCliente);
-        add('Entrega', pedido.tipoEntrega?.titulo);
-        add('Pagamento', pedido.tipoPagamento?.titulo);
-        if (pedido.tipoEntrega == TipoEntrega.delivery) add('Endereço', pedido.endereco);
-        add('Observação', pedido.observacao);
-      case PedidoStatus.emExecucao:
-      case PedidoStatus.retiradoNoBalcao:
-      case PedidoStatus.enviado:
-      case PedidoStatus.entregue:
-      case PedidoStatus.devolvido:
-        add('Cliente', pedido.nomeCliente);
-        add('Entrega', pedido.tipoEntrega?.titulo);
-        add('Pagamento', pedido.tipoPagamento?.titulo);
-        if (pedido.tipoEntrega == TipoEntrega.delivery) add('Endereço', pedido.endereco);
-        add('Observação', pedido.observacao);
-        add('Mesa', pedido.mesa);
-        add('Restrições', pedido.restricoes);
-        if (pedido.imagemPedidoRef != null) {
-          widgets.add(
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: Image.file(File(pedido.imagemPedidoRef!), height: 120, fit: BoxFit.cover),
+    if (pedido.nomeCliente != null && pedido.nomeCliente!.isNotEmpty) {
+      widgets.add(
+        Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Text(pedido.nomeCliente!, style: const TextStyle(fontWeight: FontWeight.bold)),
+        ),
+      );
+    }
+    campo(Icons.table_restaurant_outlined, pedido.mesa);
+    campo(Icons.local_shipping_outlined, pedido.tipoEntrega?.titulo);
+    if (pedido.tipoEntrega == TipoEntrega.delivery) {
+      campo(Icons.location_on_outlined, pedido.endereco);
+    }
+    campo(Icons.payments_outlined, pedido.tipoPagamento?.titulo);
+    campo(Icons.notes_outlined, pedido.observacao, negrito: true);
+    campo(Icons.warning_amber_outlined, pedido.restricoes);
+    if (pedido.imagemPedidoRef != null) {
+      final caminhoImagem = pedido.imagemPedidoRef!;
+      widgets.add(
+        Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: GestureDetector(
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                fullscreenDialog: true,
+                builder: (_) => ImagemPedidoTelaCheia(caminhoImagem: caminhoImagem),
               ),
             ),
-          );
-        }
-        if (pedido.status == PedidoStatus.devolvido) add('Motivo da Devolução', pedido.motivoDevolucao);
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: Image.file(File(caminhoImagem), height: 120, fit: BoxFit.cover),
+            ),
+          ),
+        ),
+      );
     }
+    campo(Icons.assignment_return_outlined, pedido.motivoDevolucao);
 
     return widgets;
   }
@@ -144,28 +165,52 @@ class PedidoCard extends StatelessWidget {
     switch (pedido.status) {
       case PedidoStatus.aguardandoAtendimento:
         botoes = [
-          OutlinedButton(onPressed: onAtendimento, child: const Text('Atendimento')),
-          OutlinedButton(onPressed: () => _confirmarExclusao(context), child: const Text('Excluir')),
+          IconButton(
+            icon: const Icon(Icons.support_agent_outlined),
+            tooltip: 'Atendimento',
+            onPressed: onAtendimento,
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete_outline),
+            tooltip: 'Excluir',
+            onPressed: () => _confirmarExclusao(context),
+          ),
         ];
       case PedidoStatus.emAtendimento:
         botoes = [
-          OutlinedButton(onPressed: onExecutar, child: const Text('Executar')),
-          OutlinedButton(onPressed: onEditarCadastro, child: const Text('Editar')),
-          OutlinedButton(onPressed: onCancelar, child: const Text('Cancelar')),
+          IconButton(icon: const Icon(Icons.play_circle_outline), tooltip: 'Executar', onPressed: onExecutar),
+          IconButton(icon: const Icon(Icons.edit_outlined), tooltip: 'Editar', onPressed: onEditarCadastro),
+          IconButton(icon: const Icon(Icons.cancel_outlined), tooltip: 'Cancelar', onPressed: onCancelar),
         ];
       case PedidoStatus.emExecucao:
         botoes = [
           if (pedido.tipoEntrega == TipoEntrega.delivery)
-            OutlinedButton(onPressed: () => onEnviado(), child: const Text('Enviado'))
+            IconButton(
+              icon: const Icon(Icons.local_shipping_outlined),
+              tooltip: 'Enviado',
+              onPressed: () => onEnviado(),
+            )
           else
-            OutlinedButton(onPressed: () => onRetirado(), child: const Text('Retirado')),
-          OutlinedButton(onPressed: onEditarExecucao, child: const Text('Editar')),
-          OutlinedButton(onPressed: onCancelar, child: const Text('Cancelar')),
+            IconButton(
+              icon: const Icon(Icons.storefront_outlined),
+              tooltip: 'Retirado',
+              onPressed: () => onRetirado(),
+            ),
+          IconButton(icon: const Icon(Icons.edit_outlined), tooltip: 'Editar', onPressed: onEditarExecucao),
+          IconButton(icon: const Icon(Icons.cancel_outlined), tooltip: 'Cancelar', onPressed: onCancelar),
         ];
       case PedidoStatus.enviado:
         botoes = [
-          OutlinedButton(onPressed: () => onEntregue(), child: const Text('Entregue')),
-          OutlinedButton(onPressed: onDevolvido, child: const Text('Devolvido')),
+          IconButton(
+            icon: const Icon(Icons.check_circle_outline),
+            tooltip: 'Entregue',
+            onPressed: () => onEntregue(),
+          ),
+          IconButton(
+            icon: const Icon(Icons.assignment_return_outlined),
+            tooltip: 'Devolvido',
+            onPressed: onDevolvido,
+          ),
         ];
       case PedidoStatus.retiradoNoBalcao:
       case PedidoStatus.entregue:
@@ -175,7 +220,15 @@ class PedidoCard extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.only(top: 8),
-      child: Wrap(spacing: 8, runSpacing: 8, children: botoes),
+      child: SizedBox(
+        width: double.infinity,
+        child: Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 8,
+          runSpacing: 8,
+          children: botoes,
+        ),
+      ),
     );
   }
 
