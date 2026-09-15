@@ -2,13 +2,15 @@ import 'package:flutter/services.dart';
 
 /// Só aceita dígitos e um separador decimal (`,` ou `.`), com no máximo 2
 /// dígitos depois do separador — Passo 30 (campo "Valor Pagamento", Telas
-/// 6 e 9). Qualquer edição que resultaria em texto fora desse formato é
-/// rejeitada, mantendo o valor anterior.
+/// 6 e 9). Limita o texto a no máximo 8 caracteres no total, incluindo o
+/// separador — Passo 32. Qualquer edição que resultaria em texto fora
+/// desse formato é rejeitada, mantendo o valor anterior.
 class ValorPagamentoInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
     final texto = newValue.text;
     if (texto.isEmpty) return newValue;
+    if (texto.length > 8) return oldValue;
     if (!RegExp(r'^\d*([.,]\d{0,2})?$').hasMatch(texto)) {
       return oldValue;
     }
