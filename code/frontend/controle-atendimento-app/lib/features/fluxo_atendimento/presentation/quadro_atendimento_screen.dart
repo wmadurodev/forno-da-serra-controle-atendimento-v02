@@ -25,6 +25,19 @@ Color _corColuna(int index, int totalColunas) {
   return Color.lerp(Colors.deepOrange.shade50, Colors.deepOrange.shade200, t)!;
 }
 
+/// Cor cinza sólida para as fases finais (`entregue`, `devolvido`,
+/// `retirado_no_balcao`) — Passo 26 (revisão: sem degradê, cor sólida como
+/// nas demais fases; `enviado` volta à cor laranja de `_corColuna`).
+/// Progressivamente mais escura entre si.
+Color? _corCinza(PedidoStatus status) {
+  return switch (status) {
+    PedidoStatus.entregue => Colors.grey.shade300,
+    PedidoStatus.devolvido => Colors.grey.shade400,
+    PedidoStatus.retiradoNoBalcao => Colors.grey.shade500,
+    _ => null,
+  };
+}
+
 /// Tela 4 — Execução do Fluxo de Atendimento
 /// (`docs/controle-atendimento-prototype.md` §3.4).
 class QuadroAtendimentoScreen extends StatelessWidget {
@@ -112,7 +125,7 @@ class _QuadroViewState extends State<_QuadroView> {
 
   Widget _iconeFase(PedidoStatus status, IconData icone, int quantidade) {
     final indiceReal = PedidoStatus.values.indexOf(status);
-    final cor = _corColuna(indiceReal, PedidoStatus.values.length);
+    final cor = _corCinza(status) ?? _corColuna(indiceReal, PedidoStatus.values.length);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -337,7 +350,10 @@ class _KanbanColuna extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(color: cor, borderRadius: BorderRadius.circular(16)),
+      decoration: BoxDecoration(
+        color: _corCinza(status) ?? cor,
+        borderRadius: BorderRadius.circular(16),
+      ),
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
