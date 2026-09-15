@@ -184,6 +184,18 @@ class _CadastroPedidoScreenState extends State<CadastroPedidoScreen> {
             TextFormField(
               controller: _enderecoController,
               decoration: const InputDecoration(labelText: 'Endereço'),
+              validator: (value) {
+                // Endereço só é obrigatório ao editar um Pedido que já
+                // passou de aguardando_atendimento (Passo 23) — na criação
+                // (aguardando_atendimento), fica opcional: se faltar, o
+                // Pedido simplesmente não avança para em_atendimento.
+                final editandoPedidoAvancado =
+                    _pedidoBase != null && _pedidoBase!.status != PedidoStatus.aguardandoAtendimento;
+                if (editandoPedidoAvancado && (value == null || value.trim().isEmpty)) {
+                  return 'Informe o endereço';
+                }
+                return null;
+              },
             ),
           ],
           const SizedBox(height: 16),
@@ -224,15 +236,20 @@ class _CadastroPedidoScreenState extends State<CadastroPedidoScreen> {
   }
 
   Future<void> _onGravar() async {
+    if (!_dadosFormKey.currentState!.validate()) return;
+
     setState(() => _salvando = true);
 
     final nomeCliente = _nomeClienteController.text.trim();
     final endereco = _enderecoController.text.trim();
     final observacao = _observacaoController.text.trim();
 
+    // Tipo de Pagamento só é obrigatório para delivery — retirada no balcão
+    // pode ficar sem essa informação nesta fase (Passo 22).
+    final pagamentoObrigatorio = _tipoEntrega == TipoEntrega.delivery;
     final cadastroCompleto = nomeCliente.isNotEmpty &&
         _tipoEntrega != null &&
-        _tipoPagamento != null &&
+        (!pagamentoObrigatorio || _tipoPagamento != null) &&
         (_tipoEntrega != TipoEntrega.delivery || endereco.isNotEmpty);
 
     final base = _pedidoBase;

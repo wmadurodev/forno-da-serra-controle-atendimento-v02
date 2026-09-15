@@ -103,7 +103,12 @@ class _EdicaoPedidoExecucaoScreenState extends State<EdicaoPedidoExecucaoScreen>
                 items: TipoPagamento.values
                     .map((tipo) => DropdownMenuItem(value: tipo, child: Text(tipo.titulo)))
                     .toList(),
-                validator: (value) => value == null ? 'Selecione o tipo de pagamento' : null,
+                validator: (value) {
+                  if (_tipoEntrega == TipoEntrega.delivery && value == null) {
+                    return 'Selecione o tipo de pagamento';
+                  }
+                  return null;
+                },
                 onChanged: (valor) => setState(() => _tipoPagamento = valor),
               ),
               if (_tipoEntrega == TipoEntrega.delivery) ...[
