@@ -35,8 +35,8 @@ Color? corCinza(PedidoStatus status) {
 const iconePorFase = {
   PedidoStatus.aguardandoAtendimento: Icons.hourglass_empty,
   PedidoStatus.emAtendimento: Icons.support_agent_outlined,
-  PedidoStatus.emExecucao: Icons.restaurant_outlined,
-  PedidoStatus.enviado: Icons.local_shipping_outlined,
+  PedidoStatus.emExecucao: Icons.local_pizza_outlined,
+  PedidoStatus.enviado: Icons.two_wheeler,
   PedidoStatus.entregue: Icons.check_circle_outline,
   PedidoStatus.devolvido: Icons.assignment_return_outlined,
   PedidoStatus.retiradoNoBalcao: Icons.storefront_outlined,
