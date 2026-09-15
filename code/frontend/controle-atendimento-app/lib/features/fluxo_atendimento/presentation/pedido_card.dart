@@ -178,7 +178,7 @@ class PedidoCard extends StatelessWidget {
         botoes = [
           if (pedido.tipoEntrega == TipoEntrega.delivery)
             _acao(
-              Icons.local_shipping_outlined,
+              Icons.two_wheeler,
               'Enviar',
               () => _confirmarAcao(
                 context,
