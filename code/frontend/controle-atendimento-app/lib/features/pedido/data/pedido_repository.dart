@@ -48,6 +48,19 @@ class PedidoRepository {
     return Pedido.fromMap(rows.first);
   }
 
+  /// Pedidos com valor de pagamento lançado, dentro de um Fluxo de
+  /// Atendimento — Passo 29 (Home, popup de Valores de Pagamento).
+  Future<List<Pedido>> listComValorPagamento(String fluxoAtendimentoId) async {
+    final db = await _appDatabase.database;
+    final rows = await db.query(
+      _table,
+      where: 'fluxo_atendimento_id = ? AND valor_pagamento IS NOT NULL',
+      whereArgs: [fluxoAtendimentoId],
+      orderBy: 'identificador ASC',
+    );
+    return rows.map(Pedido.fromMap).toList();
+  }
+
   /// Busca de Pedidos (Passo 27, `functional.md` §5.5) — sempre dentro de um
   /// único Fluxo de Atendimento. Só `mesa` faz correspondência exata; os
   /// demais campos buscam por conteúdo parcial (`LIKE`).

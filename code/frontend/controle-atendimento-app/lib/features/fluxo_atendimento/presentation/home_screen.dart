@@ -9,6 +9,7 @@ import 'excluir_fluxo_dialog.dart';
 import 'fechar_fluxo_dialog.dart';
 import 'home_controller.dart';
 import 'quadro_atendimento_screen.dart';
+import 'valores_pagamento_dialog.dart';
 
 /// Fundo da tela — Passo 11, tom quente/creme sem regra de negócio associada.
 const _homeBackgroundColor = Color(0xFFFFF8E7);
@@ -75,6 +76,11 @@ class _HomeView extends StatelessWidget {
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                IconButton(
+                  icon: const Icon(Icons.attach_money),
+                  tooltip: 'Valores de Pagamento',
+                  onPressed: () => _onValoresPagamento(context, fluxo),
+                ),
                 if (aberto)
                   IconButton(
                     icon: const Icon(Icons.done_all),
@@ -101,6 +107,13 @@ class _HomeView extends StatelessWidget {
       MaterialPageRoute(builder: (_) => const CadastroFluxoScreen()),
     );
     await controller.load();
+  }
+
+  Future<void> _onValoresPagamento(BuildContext context, FluxoAtendimento fluxo) async {
+    await showDialog<void>(
+      context: context,
+      builder: (_) => ValoresPagamentoDialog(fluxo: fluxo),
+    );
   }
 
   Future<void> _onFecharFluxo(BuildContext context, FluxoAtendimento fluxo) async {
