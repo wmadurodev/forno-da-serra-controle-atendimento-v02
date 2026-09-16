@@ -260,19 +260,28 @@ class _QuadroViewState extends State<_QuadroView> {
   Widget build(BuildContext context) {
     final controller = context.watch<QuadroAtendimentoController>();
 
-    return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: controller.loading
-            ? const LoadingView()
-            : _buildQuadro(context, controller),
-      ),
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildNavegadorFases(controller),
-          _buildHeaderFooter(context, controller),
-        ],
+    // Botão/gesto "Voltar" do Android pede a mesma confirmação do botão
+    // "Sair" do footer de ação, em vez de sair direto — Passo 41.
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _confirmarSaida(context);
+      },
+      child: Scaffold(
+        body: SafeArea(
+          bottom: false,
+          child: controller.loading
+              ? const LoadingView()
+              : _buildQuadro(context, controller),
+        ),
+        bottomNavigationBar: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildNavegadorFases(controller),
+            _buildHeaderFooter(context, controller),
+          ],
+        ),
       ),
     );
   }
