@@ -15,7 +15,8 @@ class CancelamentoPedidoScreen extends StatefulWidget {
   final Pedido pedido;
 
   @override
-  State<CancelamentoPedidoScreen> createState() => _CancelamentoPedidoScreenState();
+  State<CancelamentoPedidoScreen> createState() =>
+      _CancelamentoPedidoScreenState();
 }
 
 class _CancelamentoPedidoScreenState extends State<CancelamentoPedidoScreen> {
@@ -31,12 +32,15 @@ class _CancelamentoPedidoScreenState extends State<CancelamentoPedidoScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Cancelar Pedido — ${widget.pedido.identificador}')),
+      appBar: AppBar(
+        title: Text('Cancelar Pedido — ${widget.pedido.identificador}'),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: TextFormField(
           controller: _motivoController,
           decoration: const InputDecoration(labelText: 'Motivo'),
+          autofocus: true,
           maxLines: 3,
           textInputAction: TextInputAction.done,
           onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
@@ -49,7 +53,9 @@ class _CancelamentoPedidoScreenState extends State<CancelamentoPedidoScreen> {
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: _salvando ? null : () => Navigator.of(context).pop(),
+                  onPressed: _salvando
+                      ? null
+                      : () => Navigator.of(context).pop(),
                   child: const Text('Cancelar'),
                 ),
               ),
@@ -89,14 +95,16 @@ class _CancelamentoPedidoScreenState extends State<CancelamentoPedidoScreen> {
       imagemPedidoRef: pedidoOriginal.imagemPedidoRef,
       motivoCancelamento: motivo.isEmpty ? null : motivo,
       motivoDevolucao: pedidoOriginal.motivoDevolucao,
-      dataHoraAguardandoAtendimento: pedidoOriginal.dataHoraAguardandoAtendimento,
+      dataHoraAguardandoAtendimento:
+          pedidoOriginal.dataHoraAguardandoAtendimento,
       dataHoraEmAtendimento: pedidoOriginal.dataHoraEmAtendimento,
       dataHoraEmExecucao: pedidoOriginal.dataHoraEmExecucao,
       dataHoraRetiradoNoBalcao: pedidoOriginal.dataHoraRetiradoNoBalcao,
       dataHoraEnviado: pedidoOriginal.dataHoraEnviado,
       dataHoraEntregue: pedidoOriginal.dataHoraEntregue,
       dataHoraDevolvido: pedidoOriginal.dataHoraDevolvido,
-      dataHoraCancelamento: pedidoOriginal.dataHoraCancelamento ?? DateTime.now(),
+      dataHoraCancelamento:
+          pedidoOriginal.dataHoraCancelamento ?? DateTime.now(),
     );
 
     final repository = context.read<PedidoRepository>();
@@ -107,7 +115,8 @@ class _CancelamentoPedidoScreenState extends State<CancelamentoPedidoScreen> {
     } on StateError catch (e) {
       if (!mounted) return;
       setState(() => _salvando = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 }

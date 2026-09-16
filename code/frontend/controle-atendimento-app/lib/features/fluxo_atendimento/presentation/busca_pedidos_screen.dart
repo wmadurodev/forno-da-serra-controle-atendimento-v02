@@ -8,7 +8,11 @@ import 'resultado_busca_pedidos_screen.dart';
 /// busca originais (nome, identificador, mesa, endereço) com Observação e
 /// Restrição, a pedido do usuário desta iniciativa de implementação.
 class BuscaPedidosScreen extends StatefulWidget {
-  const BuscaPedidosScreen({super.key, required this.fluxoAtendimentoId, required this.somenteLeitura});
+  const BuscaPedidosScreen({
+    super.key,
+    required this.fluxoAtendimentoId,
+    required this.somenteLeitura,
+  });
 
   final String fluxoAtendimentoId;
 
@@ -56,7 +60,8 @@ class _BuscaPedidosScreenState extends State<BuscaPedidosScreen> {
     setState(() {});
   }
 
-  bool get _algumPreenchido => _controllers.values.any((c) => c.text.trim().isNotEmpty);
+  bool get _algumPreenchido =>
+      _controllers.values.any((c) => c.text.trim().isNotEmpty);
 
   void _onLimpar() {
     setState(() {
@@ -99,7 +104,11 @@ class _BuscaPedidosScreenState extends State<BuscaPedidosScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            _campoBusca('Identificador do Pedido', _identificadorController),
+            _campoBusca(
+              'Identificador do Pedido',
+              _identificadorController,
+              autofocus: true,
+            ),
             const SizedBox(height: 12),
             _campoBusca('Nome', _nomeController),
             const SizedBox(height: 12),
@@ -138,11 +147,18 @@ class _BuscaPedidosScreenState extends State<BuscaPedidosScreen> {
     );
   }
 
-  Widget _campoBusca(String label, TextEditingController controller) {
-    final habilitado = _controllers.values.every((c) => c.text.isEmpty) || controller.text.isNotEmpty;
+  Widget _campoBusca(
+    String label,
+    TextEditingController controller, {
+    bool autofocus = false,
+  }) {
+    final habilitado =
+        _controllers.values.every((c) => c.text.isEmpty) ||
+        controller.text.isNotEmpty;
     return TextField(
       controller: controller,
       enabled: habilitado,
+      autofocus: autofocus,
       decoration: InputDecoration(labelText: label),
       onChanged: (_) => _onCampoAlterado(controller),
     );

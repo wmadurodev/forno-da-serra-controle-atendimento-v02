@@ -52,6 +52,7 @@ class _ExecucaoPedidoScreenState extends State<ExecucaoPedidoScreen> {
               TextFormField(
                 controller: _mesaController,
                 decoration: const InputDecoration(labelText: 'Mesa'),
+                autofocus: true,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Informe a mesa';

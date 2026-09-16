@@ -17,10 +17,12 @@ class EdicaoPedidoExecucaoScreen extends StatefulWidget {
   final Pedido pedido;
 
   @override
-  State<EdicaoPedidoExecucaoScreen> createState() => _EdicaoPedidoExecucaoScreenState();
+  State<EdicaoPedidoExecucaoScreen> createState() =>
+      _EdicaoPedidoExecucaoScreenState();
 }
 
-class _EdicaoPedidoExecucaoScreenState extends State<EdicaoPedidoExecucaoScreen> {
+class _EdicaoPedidoExecucaoScreenState
+    extends State<EdicaoPedidoExecucaoScreen> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nomeClienteController;
   late final TextEditingController _enderecoController;
@@ -38,13 +40,21 @@ class _EdicaoPedidoExecucaoScreenState extends State<EdicaoPedidoExecucaoScreen>
   void initState() {
     super.initState();
     final pedido = widget.pedido;
-    _nomeClienteController = TextEditingController(text: pedido.nomeCliente ?? '');
+    _nomeClienteController = TextEditingController(
+      text: pedido.nomeCliente ?? '',
+    );
     _enderecoController = TextEditingController(text: pedido.endereco ?? '');
-    _observacaoController = TextEditingController(text: pedido.observacao ?? '');
+    _observacaoController = TextEditingController(
+      text: pedido.observacao ?? '',
+    );
     _mesaController = TextEditingController(text: pedido.mesa ?? '');
-    _restricoesController = TextEditingController(text: pedido.restricoes ?? '');
+    _restricoesController = TextEditingController(
+      text: pedido.restricoes ?? '',
+    );
     _valorPagamentoController = TextEditingController(
-      text: pedido.valorPagamento != null ? pedido.valorPagamento.toString() : '',
+      text: pedido.valorPagamento != null
+          ? pedido.valorPagamento.toString()
+          : '',
     );
     _tipoEntrega = pedido.tipoEntrega;
     _tipoPagamento = pedido.tipoPagamento;
@@ -64,7 +74,9 @@ class _EdicaoPedidoExecucaoScreenState extends State<EdicaoPedidoExecucaoScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Editar Pedido — ${widget.pedido.identificador}')),
+      appBar: AppBar(
+        title: Text('Editar Pedido — ${widget.pedido.identificador}'),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -74,12 +86,15 @@ class _EdicaoPedidoExecucaoScreenState extends State<EdicaoPedidoExecucaoScreen>
               TextFormField(
                 initialValue: widget.pedido.identificador,
                 readOnly: true,
-                decoration: const InputDecoration(labelText: 'Identificador do Pedido'),
+                decoration: const InputDecoration(
+                  labelText: 'Identificador do Pedido',
+                ),
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _nomeClienteController,
                 decoration: const InputDecoration(labelText: 'Nome do Cliente'),
+                autofocus: true,
                 validator: _obrigatorio,
               ),
               const SizedBox(height: 16),
@@ -87,9 +102,15 @@ class _EdicaoPedidoExecucaoScreenState extends State<EdicaoPedidoExecucaoScreen>
                 initialValue: _tipoEntrega,
                 decoration: const InputDecoration(labelText: 'Tipo de Entrega'),
                 items: TipoEntrega.values
-                    .map((tipo) => DropdownMenuItem(value: tipo, child: Text(tipo.titulo)))
+                    .map(
+                      (tipo) => DropdownMenuItem(
+                        value: tipo,
+                        child: Text(tipo.titulo),
+                      ),
+                    )
                     .toList(),
-                validator: (value) => value == null ? 'Selecione o tipo de entrega' : null,
+                validator: (value) =>
+                    value == null ? 'Selecione o tipo de entrega' : null,
                 onChanged: (valor) => setState(() {
                   _tipoEntrega = valor;
                   if (valor != TipoEntrega.delivery) {
@@ -100,9 +121,16 @@ class _EdicaoPedidoExecucaoScreenState extends State<EdicaoPedidoExecucaoScreen>
               const SizedBox(height: 16),
               DropdownButtonFormField<TipoPagamento>(
                 initialValue: _tipoPagamento,
-                decoration: const InputDecoration(labelText: 'Tipo de Pagamento'),
+                decoration: const InputDecoration(
+                  labelText: 'Tipo de Pagamento',
+                ),
                 items: TipoPagamento.values
-                    .map((tipo) => DropdownMenuItem(value: tipo, child: Text(tipo.titulo)))
+                    .map(
+                      (tipo) => DropdownMenuItem(
+                        value: tipo,
+                        child: Text(tipo.titulo),
+                      ),
+                    )
                     .toList(),
                 validator: (value) {
                   if (_tipoEntrega == TipoEntrega.delivery && value == null) {
@@ -140,7 +168,9 @@ class _EdicaoPedidoExecucaoScreenState extends State<EdicaoPedidoExecucaoScreen>
               TextFormField(
                 controller: _valorPagamentoController,
                 decoration: const InputDecoration(labelText: 'Valor Pagamento'),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 inputFormatters: [ValorPagamentoInputFormatter()],
                 validator: validarValorPagamento,
               ),
@@ -157,7 +187,9 @@ class _EdicaoPedidoExecucaoScreenState extends State<EdicaoPedidoExecucaoScreen>
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: _salvando ? null : () => Navigator.of(context).pop(),
+                  onPressed: _salvando
+                      ? null
+                      : () => Navigator.of(context).pop(),
                   child: const Text('Fechar'),
                 ),
               ),
@@ -184,7 +216,13 @@ class _EdicaoPedidoExecucaoScreenState extends State<EdicaoPedidoExecucaoScreen>
           borderRadius: BorderRadius.circular(8),
           child: _novaFoto != null
               ? Image.file(_novaFoto!, height: 200, fit: BoxFit.cover)
-              : (imagemAtual != null ? Image.file(File(imagemAtual), height: 200, fit: BoxFit.cover) : null),
+              : (imagemAtual != null
+                    ? Image.file(
+                        File(imagemAtual),
+                        height: 200,
+                        fit: BoxFit.cover,
+                      )
+                    : null),
         ),
         Padding(
           padding: const EdgeInsets.only(top: 8),
@@ -217,14 +255,19 @@ class _EdicaoPedidoExecucaoScreenState extends State<EdicaoPedidoExecucaoScreen>
     var imagemPedidoRef = widget.pedido.imagemPedidoRef;
     final novaFoto = _novaFoto;
     if (novaFoto != null) {
-      imagemPedidoRef = await ImagemPedidoStorage().salvar(widget.pedido.id!, novaFoto);
+      imagemPedidoRef = await ImagemPedidoStorage().salvar(
+        widget.pedido.id!,
+        novaFoto,
+      );
       if (!mounted) return;
     }
 
     final endereco = _enderecoController.text.trim();
     final observacao = _observacaoController.text.trim();
     final restricoes = _restricoesController.text.trim();
-    final valorPagamento = double.tryParse(_valorPagamentoController.text.trim().replaceAll(',', '.'));
+    final valorPagamento = double.tryParse(
+      _valorPagamentoController.text.trim().replaceAll(',', '.'),
+    );
 
     final pedido = Pedido(
       id: widget.pedido.id,
@@ -243,7 +286,8 @@ class _EdicaoPedidoExecucaoScreenState extends State<EdicaoPedidoExecucaoScreen>
       imagemPedidoRef: imagemPedidoRef,
       motivoCancelamento: widget.pedido.motivoCancelamento,
       motivoDevolucao: widget.pedido.motivoDevolucao,
-      dataHoraAguardandoAtendimento: widget.pedido.dataHoraAguardandoAtendimento,
+      dataHoraAguardandoAtendimento:
+          widget.pedido.dataHoraAguardandoAtendimento,
       dataHoraEmAtendimento: widget.pedido.dataHoraEmAtendimento,
       dataHoraEmExecucao: widget.pedido.dataHoraEmExecucao,
       dataHoraRetiradoNoBalcao: widget.pedido.dataHoraRetiradoNoBalcao,
@@ -261,7 +305,8 @@ class _EdicaoPedidoExecucaoScreenState extends State<EdicaoPedidoExecucaoScreen>
     } on StateError catch (e) {
       if (!mounted) return;
       setState(() => _salvando = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 }

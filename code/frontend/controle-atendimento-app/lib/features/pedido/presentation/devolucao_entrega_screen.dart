@@ -57,6 +57,7 @@ class _DevolucaoEntregaScreenState extends State<DevolucaoEntregaScreen> {
                 decoration: const InputDecoration(
                   labelText: 'Motivo da Devolução',
                 ),
+                autofocus: true,
                 maxLines: 3,
                 textInputAction: TextInputAction.done,
                 onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),

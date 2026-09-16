@@ -128,6 +128,13 @@ class _CadastroPedidoScreenState extends State<CadastroPedidoScreen> {
             child: TextFormField(
               controller: _identificadorController,
               readOnly: _identificadorConfirmado,
+              autofocus: !_identificadorConfirmado,
+              textInputAction: TextInputAction.done,
+              onFieldSubmitted: (_) {
+                if (!_identificadorConfirmado && !_buscando) {
+                  _onConfirmarIdentificador();
+                }
+              },
               decoration: const InputDecoration(
                 labelText: 'Identificador do Pedido',
               ),
@@ -163,6 +170,7 @@ class _CadastroPedidoScreenState extends State<CadastroPedidoScreen> {
           TextFormField(
             controller: _nomeClienteController,
             decoration: const InputDecoration(labelText: 'Nome do Cliente'),
+            autofocus: true,
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<TipoEntrega>(

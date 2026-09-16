@@ -26,7 +26,9 @@ class _CadastroFluxoScreenState extends State<CadastroFluxoScreen> {
   @override
   void initState() {
     super.initState();
-    _identificadorController = TextEditingController(text: _sugestaoIdentificador());
+    _identificadorController = TextEditingController(
+      text: _sugestaoIdentificador(),
+    );
   }
 
   @override
@@ -53,6 +55,7 @@ class _CadastroFluxoScreenState extends State<CadastroFluxoScreen> {
             controller: _identificadorController,
             decoration: const InputDecoration(labelText: 'Identificador'),
             maxLength: _tamanhoMaximoIdentificador,
+            autofocus: true,
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
                 return 'Informe o identificador do fluxo';
@@ -69,7 +72,9 @@ class _CadastroFluxoScreenState extends State<CadastroFluxoScreen> {
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: _salvando ? null : () => Navigator.of(context).pop(),
+                  onPressed: _salvando
+                      ? null
+                      : () => Navigator.of(context).pop(),
                   child: const Text('Cancelar'),
                 ),
               ),
@@ -103,19 +108,23 @@ class _CadastroFluxoScreenState extends State<CadastroFluxoScreen> {
 
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => QuadroAtendimentoScreen(fluxo: fluxo)),
+        MaterialPageRoute(
+          builder: (_) => QuadroAtendimentoScreen(fluxo: fluxo),
+        ),
       );
     } on StateError catch (e) {
       if (!mounted) return;
       setState(() => _salvando = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.message)));
     } on DatabaseException catch (e) {
       if (!mounted) return;
       setState(() => _salvando = false);
       final mensagem = e.isUniqueConstraintError()
           ? 'Já existe um Fluxo de Atendimento com este identificador'
           : 'Não foi possível criar o Fluxo de Atendimento';
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(mensagem)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(mensagem)));
     }
   }
 }
