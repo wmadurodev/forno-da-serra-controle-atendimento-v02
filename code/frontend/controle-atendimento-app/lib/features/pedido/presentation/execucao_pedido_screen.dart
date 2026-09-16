@@ -68,7 +68,9 @@ class _ExecucaoPedidoScreenState extends State<ExecucaoPedidoScreen> {
               TextFormField(
                 controller: _valorPagamentoController,
                 decoration: const InputDecoration(labelText: 'Valor Pagamento'),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 inputFormatters: [ValorPagamentoInputFormatter()],
                 validator: validarValorPagamento,
               ),
@@ -83,7 +85,9 @@ class _ExecucaoPedidoScreenState extends State<ExecucaoPedidoScreen> {
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: _salvando ? null : () => Navigator.of(context).pop(),
+                  onPressed: _salvando
+                      ? null
+                      : () => Navigator.of(context).pop(),
                   child: const Text('Cancelar'),
                 ),
               ),
@@ -136,12 +140,17 @@ class _ExecucaoPedidoScreenState extends State<ExecucaoPedidoScreen> {
     final foto = _foto;
     String? imagemPedidoRef;
     if (foto != null) {
-      imagemPedidoRef = await ImagemPedidoStorage().salvar(widget.pedido.id!, foto);
+      imagemPedidoRef = await ImagemPedidoStorage().salvar(
+        widget.pedido.id!,
+        foto,
+      );
       if (!mounted) return;
     }
 
     final restricoes = _restricoesController.text.trim();
-    final valorPagamento = double.tryParse(_valorPagamentoController.text.trim().replaceAll(',', '.'));
+    final valorPagamento = double.tryParse(
+      _valorPagamentoController.text.trim().replaceAll(',', '.'),
+    );
 
     final pedido = Pedido(
       id: widget.pedido.id,
@@ -160,7 +169,8 @@ class _ExecucaoPedidoScreenState extends State<ExecucaoPedidoScreen> {
       imagemPedidoRef: imagemPedidoRef,
       motivoCancelamento: widget.pedido.motivoCancelamento,
       motivoDevolucao: widget.pedido.motivoDevolucao,
-      dataHoraAguardandoAtendimento: widget.pedido.dataHoraAguardandoAtendimento,
+      dataHoraAguardandoAtendimento:
+          widget.pedido.dataHoraAguardandoAtendimento,
       dataHoraEmAtendimento: widget.pedido.dataHoraEmAtendimento,
       dataHoraEmExecucao: widget.pedido.dataHoraEmExecucao ?? DateTime.now(),
       dataHoraRetiradoNoBalcao: widget.pedido.dataHoraRetiradoNoBalcao,
@@ -174,11 +184,12 @@ class _ExecucaoPedidoScreenState extends State<ExecucaoPedidoScreen> {
     try {
       await repository.salvar(pedido);
       if (!mounted) return;
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(PedidoStatus.emExecucao);
     } on StateError catch (e) {
       if (!mounted) return;
       setState(() => _salvando = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 }

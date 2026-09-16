@@ -59,6 +59,12 @@ class _QuadroViewState extends State<_QuadroView> {
   /// (Passo 28) e para restaurar a rolagem após um refresh (Passo 39).
   int _indiceFaseVisivel = 0;
 
+  /// Status para o qual o Kanban deve rolar após o próximo `load()`, em vez
+  /// de restaurar `_indiceFaseVisivel` — setado antes de incluir/alterar um
+  /// Pedido, consumido (voltando a `null`) em `_restaurarPosicaoScroll`
+  /// (Passo 42).
+  PedidoStatus? _statusAlvoAposRecarga;
+
   FluxoAtendimento get fluxo => widget.fluxo;
   bool get _somenteLeitura => fluxo.status == FluxoAtendimentoStatus.fechado;
 
@@ -95,10 +101,38 @@ class _QuadroViewState extends State<_QuadroView> {
 
   void _restaurarPosicaoScroll() {
     if (!_scrollController.hasClients) return;
+    final statusAlvo = _statusAlvoAposRecarga;
+    _statusAlvoAposRecarga = null;
+    final maximo = _scrollController.position.maxScrollExtent;
+    // Um status-alvo (Pedido novo/alterado, Passo 42) tem prioridade sobre a
+    // restauração silenciosa (Passo 39) — é uma navegação deliberada, então
+    // anima como `_rolarParaFase` em vez de saltar direto.
+    if (statusAlvo != null) {
+      final indice = PedidoStatus.values.indexOf(statusAlvo);
+      final offsetAlvo =
+          _paddingInicial + indice * (_larguraColuna + _espacamento);
+      _scrollController.animateTo(
+        offsetAlvo.clamp(0.0, maximo),
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+      return;
+    }
     final offsetAlvo =
         _paddingInicial + _indiceFaseVisivel * (_larguraColuna + _espacamento);
-    final maximo = _scrollController.position.maxScrollExtent;
     _scrollController.jumpTo(offsetAlvo.clamp(0.0, maximo));
+  }
+
+  /// Grava o status-alvo (Passo 42) e delega para o controller — usado
+  /// pelas ações rápidas do card (Retirado/Enviado/Entregue) em vez de
+  /// chamar `controller.atualizarStatus` diretamente de `_KanbanColuna`.
+  Future<void> _atualizarStatusENavegar(
+    QuadroAtendimentoController controller,
+    Pedido pedido,
+    PedidoStatus novoStatus,
+  ) {
+    _statusAlvoAposRecarga = novoStatus;
+    return controller.atualizarStatus(pedido, novoStatus);
   }
 
   /// Rola o Kanban horizontalmente até a coluna de `status` ficar alinhada
@@ -482,6 +516,12 @@ class _QuadroViewState extends State<_QuadroView> {
                         _abrirCancelamento(context, controller, pedido),
                     onAbrirDevolucao: (context, pedido) =>
                         _abrirDevolucao(context, controller, pedido),
+                    onAtualizarStatus: (pedido, novoStatus) =>
+                        _atualizarStatusENavegar(
+                          controller,
+                          pedido,
+                          novoStatus,
+                        ),
                   ),
                 ),
               ],
@@ -526,7 +566,7 @@ class _QuadroViewState extends State<_QuadroView> {
     QuadroAtendimentoController controller, {
     Pedido? pedidoExistente,
   }) async {
-    await Navigator.of(context).push(
+    final novoStatus = await Navigator.of(context).push<PedidoStatus>(
       MaterialPageRoute(
         builder: (_) => CadastroPedidoScreen(
           fluxoAtendimentoId: fluxo.identificador,
@@ -534,6 +574,7 @@ class _QuadroViewState extends State<_QuadroView> {
         ),
       ),
     );
+    if (novoStatus != null) _statusAlvoAposRecarga = novoStatus;
     await controller.load();
   }
 
@@ -542,9 +583,10 @@ class _QuadroViewState extends State<_QuadroView> {
     QuadroAtendimentoController controller,
     Pedido pedido,
   ) async {
-    await Navigator.of(context).push(
+    final novoStatus = await Navigator.of(context).push<PedidoStatus>(
       MaterialPageRoute(builder: (_) => ExecucaoPedidoScreen(pedido: pedido)),
     );
+    if (novoStatus != null) _statusAlvoAposRecarga = novoStatus;
     await controller.load();
   }
 
@@ -579,9 +621,10 @@ class _QuadroViewState extends State<_QuadroView> {
     QuadroAtendimentoController controller,
     Pedido pedido,
   ) async {
-    await Navigator.of(context).push(
+    final novoStatus = await Navigator.of(context).push<PedidoStatus>(
       MaterialPageRoute(builder: (_) => DevolucaoEntregaScreen(pedido: pedido)),
     );
+    if (novoStatus != null) _statusAlvoAposRecarga = novoStatus;
     await controller.load();
   }
 }
@@ -598,6 +641,7 @@ class _KanbanColuna extends StatelessWidget {
     required this.onAbrirEdicaoExecucao,
     required this.onAbrirCancelamento,
     required this.onAbrirDevolucao,
+    required this.onAtualizarStatus,
   });
 
   final PedidoStatus status;
@@ -615,6 +659,12 @@ class _KanbanColuna extends StatelessWidget {
   onAbrirCancelamento;
   final Future<void> Function(BuildContext context, Pedido pedido)
   onAbrirDevolucao;
+
+  /// Ações rápidas do card (Retirado/Enviado/Entregue) passam por aqui em
+  /// vez de chamar `controller.atualizarStatus` direto, para o Kanban saber
+  /// para qual coluna navegar após o refresh (Passo 42).
+  final Future<void> Function(Pedido pedido, PedidoStatus novoStatus)
+  onAtualizarStatus;
 
   @override
   Widget build(BuildContext context) {
@@ -664,24 +714,19 @@ class _KanbanColuna extends StatelessWidget {
                         ),
                         onRetirado: () => _executar(
                           context,
-                          () => controller.atualizarStatus(
+                          () => onAtualizarStatus(
                             pedido,
                             PedidoStatus.retiradoNoBalcao,
                           ),
                         ),
                         onEnviado: () => _executar(
                           context,
-                          () => controller.atualizarStatus(
-                            pedido,
-                            PedidoStatus.enviado,
-                          ),
+                          () => onAtualizarStatus(pedido, PedidoStatus.enviado),
                         ),
                         onEntregue: () => _executar(
                           context,
-                          () => controller.atualizarStatus(
-                            pedido,
-                            PedidoStatus.entregue,
-                          ),
+                          () =>
+                              onAtualizarStatus(pedido, PedidoStatus.entregue),
                         ),
                         onAtendimento: () =>
                             onAbrirCadastroPedido(context, pedido),

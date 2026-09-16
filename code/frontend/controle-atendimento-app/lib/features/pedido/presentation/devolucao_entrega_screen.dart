@@ -45,7 +45,8 @@ class _DevolucaoEntregaScreenState extends State<DevolucaoEntregaScreen> {
                     .map(
                       (sugestao) => ActionChip(
                         label: Text(sugestao),
-                        onPressed: () => setState(() => _motivoController.text = sugestao),
+                        onPressed: () =>
+                            setState(() => _motivoController.text = sugestao),
                       ),
                     )
                     .toList(),
@@ -53,7 +54,9 @@ class _DevolucaoEntregaScreenState extends State<DevolucaoEntregaScreen> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _motivoController,
-                decoration: const InputDecoration(labelText: 'Motivo da Devolução'),
+                decoration: const InputDecoration(
+                  labelText: 'Motivo da Devolução',
+                ),
                 maxLines: 3,
                 textInputAction: TextInputAction.done,
                 onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
@@ -75,7 +78,9 @@ class _DevolucaoEntregaScreenState extends State<DevolucaoEntregaScreen> {
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: _salvando ? null : () => Navigator.of(context).pop(),
+                  onPressed: _salvando
+                      ? null
+                      : () => Navigator.of(context).pop(),
                   child: const Text('Cancelar'),
                 ),
               ),
@@ -116,7 +121,8 @@ class _DevolucaoEntregaScreenState extends State<DevolucaoEntregaScreen> {
       imagemPedidoRef: pedidoOriginal.imagemPedidoRef,
       motivoCancelamento: pedidoOriginal.motivoCancelamento,
       motivoDevolucao: _motivoController.text.trim(),
-      dataHoraAguardandoAtendimento: pedidoOriginal.dataHoraAguardandoAtendimento,
+      dataHoraAguardandoAtendimento:
+          pedidoOriginal.dataHoraAguardandoAtendimento,
       dataHoraEmAtendimento: pedidoOriginal.dataHoraEmAtendimento,
       dataHoraEmExecucao: pedidoOriginal.dataHoraEmExecucao,
       dataHoraRetiradoNoBalcao: pedidoOriginal.dataHoraRetiradoNoBalcao,
@@ -130,11 +136,12 @@ class _DevolucaoEntregaScreenState extends State<DevolucaoEntregaScreen> {
     try {
       await repository.salvar(pedido);
       if (!mounted) return;
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(PedidoStatus.devolvido);
     } on StateError catch (e) {
       if (!mounted) return;
       setState(() => _salvando = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 }

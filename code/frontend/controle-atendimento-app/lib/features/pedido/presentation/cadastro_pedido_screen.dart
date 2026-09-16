@@ -49,7 +49,9 @@ class _CadastroPedidoScreenState extends State<CadastroPedidoScreen> {
   void initState() {
     super.initState();
     final existente = widget.pedidoExistente;
-    _identificadorController = TextEditingController(text: existente?.identificador ?? '');
+    _identificadorController = TextEditingController(
+      text: existente?.identificador ?? '',
+    );
 
     if (existente != null) {
       _pedidoBase = existente;
@@ -94,14 +96,18 @@ class _CadastroPedidoScreenState extends State<CadastroPedidoScreen> {
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: _salvando ? null : () => Navigator.of(context).pop(),
+                  onPressed: _salvando
+                      ? null
+                      : () => Navigator.of(context).pop(),
                   child: const Text('Fechar'),
                 ),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: FilledButton(
-                  onPressed: (_identificadorConfirmado && !_salvando) ? _onGravar : null,
+                  onPressed: (_identificadorConfirmado && !_salvando)
+                      ? _onGravar
+                      : null,
                   child: const Text('Gravar'),
                 ),
               ),
@@ -122,7 +128,9 @@ class _CadastroPedidoScreenState extends State<CadastroPedidoScreen> {
             child: TextFormField(
               controller: _identificadorController,
               readOnly: _identificadorConfirmado,
-              decoration: const InputDecoration(labelText: 'Identificador do Pedido'),
+              decoration: const InputDecoration(
+                labelText: 'Identificador do Pedido',
+              ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return 'Informe o identificador do pedido';
@@ -161,7 +169,10 @@ class _CadastroPedidoScreenState extends State<CadastroPedidoScreen> {
             initialValue: _tipoEntrega,
             decoration: const InputDecoration(labelText: 'Tipo de Entrega'),
             items: TipoEntrega.values
-                .map((tipo) => DropdownMenuItem(value: tipo, child: Text(tipo.titulo)))
+                .map(
+                  (tipo) =>
+                      DropdownMenuItem(value: tipo, child: Text(tipo.titulo)),
+                )
                 .toList(),
             onChanged: (valor) => setState(() {
               _tipoEntrega = valor;
@@ -175,7 +186,10 @@ class _CadastroPedidoScreenState extends State<CadastroPedidoScreen> {
             initialValue: _tipoPagamento,
             decoration: const InputDecoration(labelText: 'Tipo de Pagamento'),
             items: TipoPagamento.values
-                .map((tipo) => DropdownMenuItem(value: tipo, child: Text(tipo.titulo)))
+                .map(
+                  (tipo) =>
+                      DropdownMenuItem(value: tipo, child: Text(tipo.titulo)),
+                )
                 .toList(),
             onChanged: (valor) => setState(() => _tipoPagamento = valor),
           ),
@@ -190,8 +204,10 @@ class _CadastroPedidoScreenState extends State<CadastroPedidoScreen> {
                 // (aguardando_atendimento), fica opcional: se faltar, o
                 // Pedido simplesmente não avança para em_atendimento.
                 final editandoPedidoAvancado =
-                    _pedidoBase != null && _pedidoBase!.status != PedidoStatus.aguardandoAtendimento;
-                if (editandoPedidoAvancado && (value == null || value.trim().isEmpty)) {
+                    _pedidoBase != null &&
+                    _pedidoBase!.status != PedidoStatus.aguardandoAtendimento;
+                if (editandoPedidoAvancado &&
+                    (value == null || value.trim().isEmpty)) {
                   return 'Informe o endereço';
                 }
                 return null;
@@ -219,7 +235,9 @@ class _CadastroPedidoScreenState extends State<CadastroPedidoScreen> {
 
     final repository = context.read<PedidoRepository>();
     final identificador = _identificadorController.text.trim();
-    final maisRecente = await repository.buscarMaisRecentePorIdentificador(identificador);
+    final maisRecente = await repository.buscarMaisRecentePorIdentificador(
+      identificador,
+    );
 
     if (!mounted) return;
     setState(() {
@@ -247,7 +265,8 @@ class _CadastroPedidoScreenState extends State<CadastroPedidoScreen> {
     // Tipo de Pagamento só é obrigatório para delivery — retirada no balcão
     // pode ficar sem essa informação nesta fase (Passo 22).
     final pagamentoObrigatorio = _tipoEntrega == TipoEntrega.delivery;
-    final cadastroCompleto = nomeCliente.isNotEmpty &&
+    final cadastroCompleto =
+        nomeCliente.isNotEmpty &&
         _tipoEntrega != null &&
         (!pagamentoObrigatorio || _tipoPagamento != null) &&
         (_tipoEntrega != TipoEntrega.delivery || endereco.isNotEmpty);
@@ -256,8 +275,11 @@ class _CadastroPedidoScreenState extends State<CadastroPedidoScreen> {
     // Uma vez além de `aguardando_atendimento`, o status nunca regride (FN-8):
     // editar os dados de Cadastro de um pedido mais avançado (ex.: a partir do
     // botão "Editar" do card `em_atendimento`) preserva o status atual.
-    final novoStatus = (base == null || base.status == PedidoStatus.aguardandoAtendimento)
-        ? (cadastroCompleto ? PedidoStatus.emAtendimento : PedidoStatus.aguardandoAtendimento)
+    final novoStatus =
+        (base == null || base.status == PedidoStatus.aguardandoAtendimento)
+        ? (cadastroCompleto
+              ? PedidoStatus.emAtendimento
+              : PedidoStatus.aguardandoAtendimento)
         : base.status;
 
     final pedido = Pedido(
@@ -277,9 +299,11 @@ class _CadastroPedidoScreenState extends State<CadastroPedidoScreen> {
       imagemPedidoRef: base?.imagemPedidoRef,
       motivoCancelamento: base?.motivoCancelamento,
       motivoDevolucao: base?.motivoDevolucao,
-      dataHoraAguardandoAtendimento: base?.dataHoraAguardandoAtendimento ?? DateTime.now(),
+      dataHoraAguardandoAtendimento:
+          base?.dataHoraAguardandoAtendimento ?? DateTime.now(),
       dataHoraEmAtendimento:
-          base?.dataHoraEmAtendimento ?? (novoStatus == PedidoStatus.emAtendimento ? DateTime.now() : null),
+          base?.dataHoraEmAtendimento ??
+          (novoStatus == PedidoStatus.emAtendimento ? DateTime.now() : null),
       dataHoraEmExecucao: base?.dataHoraEmExecucao,
       dataHoraRetiradoNoBalcao: base?.dataHoraRetiradoNoBalcao,
       dataHoraEnviado: base?.dataHoraEnviado,
@@ -292,11 +316,12 @@ class _CadastroPedidoScreenState extends State<CadastroPedidoScreen> {
     try {
       await repository.salvar(pedido);
       if (!mounted) return;
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(novoStatus);
     } on StateError catch (e) {
       if (!mounted) return;
       setState(() => _salvando = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 }
