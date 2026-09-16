@@ -86,14 +86,17 @@ class _QuadroViewState extends State<_QuadroView> {
   /// `LoadingView`) e ele remonta em offset 0 ao voltar para `false`.
   void _aoAtualizarController() {
     if (_carregandoAnterior && !_controller.loading) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _restaurarPosicaoScroll());
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _restaurarPosicaoScroll(),
+      );
     }
     _carregandoAnterior = _controller.loading;
   }
 
   void _restaurarPosicaoScroll() {
     if (!_scrollController.hasClients) return;
-    final offsetAlvo = _paddingInicial + _indiceFaseVisivel * (_larguraColuna + _espacamento);
+    final offsetAlvo =
+        _paddingInicial + _indiceFaseVisivel * (_larguraColuna + _espacamento);
     final maximo = _scrollController.position.maxScrollExtent;
     _scrollController.jumpTo(offsetAlvo.clamp(0.0, maximo));
   }
@@ -102,7 +105,8 @@ class _QuadroViewState extends State<_QuadroView> {
   /// à esquerda da tela visível — Passo 25.
   void _rolarParaFase(PedidoStatus status) {
     final indice = PedidoStatus.values.indexOf(status);
-    final offsetAlvo = _paddingInicial + indice * (_larguraColuna + _espacamento);
+    final offsetAlvo =
+        _paddingInicial + indice * (_larguraColuna + _espacamento);
     final maximo = _scrollController.position.maxScrollExtent;
     _scrollController.animateTo(
       offsetAlvo.clamp(0.0, maximo),
@@ -116,9 +120,11 @@ class _QuadroViewState extends State<_QuadroView> {
   /// percurso, então o destaque muda assim que o usuário rola além do meio
   /// do caminho entre duas colunas.
   void _atualizarFaseVisivel() {
-    final indice = ((_scrollController.offset - _paddingInicial) / (_larguraColuna + _espacamento))
-        .round()
-        .clamp(0, PedidoStatus.values.length - 1);
+    final indice =
+        ((_scrollController.offset - _paddingInicial) /
+                (_larguraColuna + _espacamento))
+            .round()
+            .clamp(0, PedidoStatus.values.length - 1);
     if (indice != _indiceFaseVisivel) {
       setState(() => _indiceFaseVisivel = indice);
     }
@@ -126,13 +132,18 @@ class _QuadroViewState extends State<_QuadroView> {
 
   Widget _buildNavegadorFases(QuadroAtendimentoController controller) {
     return SafeArea(
+      bottom: false,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         child: Row(
           children: [
             for (final status in PedidoStatus.values)
               Expanded(
-                child: _iconeFase(status, iconePorFase[status]!, controller.pedidosDe(status).length),
+                child: _iconeFase(
+                  status,
+                  iconePorFase[status]!,
+                  controller.pedidosDe(status).length,
+                ),
               ),
           ],
         ),
@@ -140,39 +151,108 @@ class _QuadroViewState extends State<_QuadroView> {
     );
   }
 
+  /// Diâmetro fixo do círculo de cada ícone de fase — não muda com `ativo`
+  /// (Passo 40, correção de bug: variar o tamanho do container descentraliza
+  /// o ícone dentro do próprio Stack, ver nota abaixo).
+  static const _diametroIconeFase = 50.0;
+
   Widget _iconeFase(PedidoStatus status, IconData icone, int quantidade) {
     final indiceReal = PedidoStatus.values.indexOf(status);
-    final cor = corCinza(status) ?? corColuna(indiceReal, PedidoStatus.values.length);
+    final cor =
+        corCinza(status) ?? corColuna(indiceReal, PedidoStatus.values.length);
     // Destaque só em modo retrato — em paisagem várias colunas ficam
     // visíveis ao mesmo tempo, então marcar "a" coluna visível não faz
     // sentido (Passo 28, revisão).
-    final orientacaoRetrato = MediaQuery.orientationOf(context) == Orientation.portrait;
+    final orientacaoRetrato =
+        MediaQuery.orientationOf(context) == Orientation.portrait;
     final ativo = orientacaoRetrato && indiceReal == _indiceFaseVisivel;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Tooltip(
-          message: status.titulo,
-          child: InkWell(
-            customBorder: const CircleBorder(),
-            onTap: () => _rolarParaFase(status),
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: ativo ? Border.all(color: Theme.of(context).colorScheme.primary, width: 3) : null,
-              ),
-              child: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(color: cor, shape: BoxShape.circle),
-                child: Icon(icone, color: Colors.black87),
-              ),
+    return Center(
+      child: Tooltip(
+        message: status.titulo,
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: () => _rolarParaFase(status),
+          child: Padding(
+            padding: const EdgeInsets.all(4),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                // Tamanho do círculo fixo (`width`/`height` explícitos, sem
+                // depender de padding) em qualquer estado — só cor/sombra
+                // mudam com `ativo`; `alignment: Alignment.center` garante
+                // o ícone sempre centralizado dentro do círculo,
+                // independente da borda de destaque estar visível ou não.
+                // O "crescimento" ao ficar ativo é só um `AnimatedScale`
+                // (transformação de pintura, não afeta layout/posição).
+                // Antes, o tamanho do Container variava com `ativo`
+                // (padding/borda), o que descentralizava o ícone — ver
+                // memória do projeto para o histórico da correção.
+                AnimatedScale(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeOut,
+                  scale: ativo ? 1.12 : 1.0,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeOut,
+                    width: _diametroIconeFase,
+                    height: _diametroIconeFase,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: cor,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: ativo
+                            ? Theme.of(context).colorScheme.primary
+                            : Colors.transparent,
+                        width: 3,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(
+                            alpha: ativo ? 0.35 : 0.18,
+                          ),
+                          blurRadius: ativo ? 10 : 4,
+                          offset: Offset(0, ativo ? 4 : 2),
+                        ),
+                      ],
+                    ),
+                    child: Icon(icone, color: Colors.black87),
+                  ),
+                ),
+                Positioned(
+                  right: -4,
+                  top: -4,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 1,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 18,
+                      minHeight: 18,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 1.5),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '$quantidade',
+                        style: const TextStyle(
+                          fontSize: 10,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
-        const SizedBox(height: 2),
-        Text('$quantidade', style: TextStyle(fontSize: 11, color: Colors.grey.shade700)),
-      ],
+      ),
     );
   }
 
@@ -181,43 +261,156 @@ class _QuadroViewState extends State<_QuadroView> {
     final controller = context.watch<QuadroAtendimentoController>();
 
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Text(fluxo.identificador),
-        actions: [
-          if (!_somenteLeitura) ...[
-            IconButton.filledTonal(
-              icon: const Icon(Icons.add),
-              tooltip: 'Novo Pedido',
-              onPressed: () => _abrirCadastroPedido(context, controller),
-            ),
-            const SizedBox(width: 4),
-          ],
-          IconButton.filledTonal(
-            icon: Icon(controller.filtro == FiltroPedidoVisualizacao.todos ? Icons.filter_list : Icons.filter_alt),
-            tooltip: 'Filtrar Pedidos',
-            onPressed: () => _abrirFiltro(context, controller),
-          ),
-          const SizedBox(width: 4),
-          IconButton.filledTonal(
-            icon: const Icon(Icons.search),
-            tooltip: 'Busca de Pedidos',
-            onPressed: () => _abrirBusca(context, controller),
-          ),
-          const SizedBox(width: 4),
-          IconButton.filledTonal(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Sair',
-            onPressed: () => _confirmarSaida(context),
-          ),
+      body: SafeArea(
+        bottom: false,
+        child: controller.loading
+            ? const LoadingView()
+            : _buildQuadro(context, controller),
+      ),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildNavegadorFases(controller),
+          _buildHeaderFooter(context, controller),
         ],
       ),
-      body: controller.loading ? const LoadingView() : _buildQuadro(context, controller),
-      bottomNavigationBar: _buildNavegadorFases(controller),
     );
   }
 
-  Future<void> _abrirFiltro(BuildContext context, QuadroAtendimentoController controller) async {
+  /// Elementos que antes ficavam no `AppBar` (header) da Tela 4, movidos
+  /// para um footer abaixo do navegador de fases (Passo 40). Fundo em
+  /// gradiente diagonal (tons de `colorScheme.primary`, deepOrange), sem
+  /// cantos arredondados; botões quadrados de canto arredondado com fundo
+  /// em gradiente claro (branco→creme) e sombra própria (`_botaoFooterAcao`)
+  /// — cores invertidas (fundo claro, ícone na cor da marca) para se
+  /// destacarem sobre o gradiente do footer. Só este bloco recebeu o
+  /// estilo — o navegador de fases acima permanece inalterado.
+  static const _raioCantosFooter = 16.0;
+
+  /// Botão de ação do footer (Novo Pedido/Filtrar/Buscar/Sair): fundo em
+  /// gradiente claro com sombra própria — o `IconButton` em si fica
+  /// transparente, envolto num `Material` (para o efeito de toque) dentro
+  /// de um `Container` decorado (gradiente + sombra), ambos com o mesmo
+  /// `borderRadius` para o toque não vazar dos cantos arredondados.
+  Widget _botaoFooterAcao(
+    BuildContext context, {
+    required IconData icone,
+    required String tooltip,
+    required VoidCallback onPressed,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final borderRadius = BorderRadius.circular(_raioCantosFooter);
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, Color(0xFFFFE0B2)],
+        ),
+        borderRadius: borderRadius,
+        boxShadow: const [
+          BoxShadow(color: Colors.black45, blurRadius: 6, offset: Offset(0, 3)),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: borderRadius,
+        child: IconButton(
+          icon: Icon(icone),
+          color: colorScheme.primary,
+          tooltip: tooltip,
+          onPressed: onPressed,
+          style: IconButton.styleFrom(
+            shape: RoundedRectangleBorder(borderRadius: borderRadius),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderFooter(
+    BuildContext context,
+    QuadroAtendimentoController controller,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color.lerp(colorScheme.primary, Colors.black, 0.25)!,
+            colorScheme.primary,
+            Color.lerp(colorScheme.primary, Colors.white, 0.15)!,
+          ],
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 6,
+            offset: Offset(0, -1),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  fluxo.identificador,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: colorScheme.onPrimary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (!_somenteLeitura) ...[
+                _botaoFooterAcao(
+                  context,
+                  icone: Icons.add_rounded,
+                  tooltip: 'Novo Pedido',
+                  onPressed: () => _abrirCadastroPedido(context, controller),
+                ),
+                const SizedBox(width: 8),
+              ],
+              _botaoFooterAcao(
+                context,
+                icone: controller.filtro == FiltroPedidoVisualizacao.todos
+                    ? Icons.filter_list_rounded
+                    : Icons.filter_alt_rounded,
+                tooltip: 'Filtrar Pedidos',
+                onPressed: () => _abrirFiltro(context, controller),
+              ),
+              const SizedBox(width: 8),
+              _botaoFooterAcao(
+                context,
+                icone: Icons.search_rounded,
+                tooltip: 'Busca de Pedidos',
+                onPressed: () => _abrirBusca(context, controller),
+              ),
+              const SizedBox(width: 8),
+              _botaoFooterAcao(
+                context,
+                icone: Icons.logout_rounded,
+                tooltip: 'Sair',
+                onPressed: () => _confirmarSaida(context),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _abrirFiltro(
+    BuildContext context,
+    QuadroAtendimentoController controller,
+  ) async {
     final novoFiltro = await showDialog<FiltroPedidoVisualizacao>(
       context: context,
       builder: (_) => FiltroPedidosDialog(filtroAtual: controller.filtro),
@@ -227,7 +420,10 @@ class _QuadroViewState extends State<_QuadroView> {
     }
   }
 
-  Future<void> _abrirBusca(BuildContext context, QuadroAtendimentoController controller) async {
+  Future<void> _abrirBusca(
+    BuildContext context,
+    QuadroAtendimentoController controller,
+  ) async {
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => BuscaPedidosScreen(
@@ -239,7 +435,10 @@ class _QuadroViewState extends State<_QuadroView> {
     await controller.load();
   }
 
-  Widget _buildQuadro(BuildContext context, QuadroAtendimentoController controller) {
+  Widget _buildQuadro(
+    BuildContext context,
+    QuadroAtendimentoController controller,
+  ) {
     return LayoutBuilder(
       builder: (context, constraints) {
         return SingleChildScrollView(
@@ -261,11 +460,19 @@ class _QuadroViewState extends State<_QuadroView> {
                     somenteLeitura: _somenteLeitura,
                     controller: controller,
                     onAbrirCadastroPedido: (context, pedidoExistente) =>
-                        _abrirCadastroPedido(context, controller, pedidoExistente: pedidoExistente),
-                    onAbrirExecucaoPedido: (context, pedido) => _abrirExecucaoPedido(context, controller, pedido),
-                    onAbrirEdicaoExecucao: (context, pedido) => _abrirEdicaoExecucao(context, controller, pedido),
-                    onAbrirCancelamento: (context, pedido) => _abrirCancelamento(context, controller, pedido),
-                    onAbrirDevolucao: (context, pedido) => _abrirDevolucao(context, controller, pedido),
+                        _abrirCadastroPedido(
+                          context,
+                          controller,
+                          pedidoExistente: pedidoExistente,
+                        ),
+                    onAbrirExecucaoPedido: (context, pedido) =>
+                        _abrirExecucaoPedido(context, controller, pedido),
+                    onAbrirEdicaoExecucao: (context, pedido) =>
+                        _abrirEdicaoExecucao(context, controller, pedido),
+                    onAbrirCancelamento: (context, pedido) =>
+                        _abrirCancelamento(context, controller, pedido),
+                    onAbrirDevolucao: (context, pedido) =>
+                        _abrirDevolucao(context, controller, pedido),
                   ),
                 ),
               ],
@@ -281,10 +488,18 @@ class _QuadroViewState extends State<_QuadroView> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Sair'),
-        content: const Text('Deseja sair da execução deste fluxo de atendimento?'),
+        content: const Text(
+          'Deseja sair da execução deste fluxo de atendimento?',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: const Text('Cancelar')),
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(true), child: const Text('Sair')),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Sair'),
+          ),
         ],
       ),
     );
@@ -330,7 +545,9 @@ class _QuadroViewState extends State<_QuadroView> {
     Pedido pedido,
   ) async {
     await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => EdicaoPedidoExecucaoScreen(pedido: pedido)),
+      MaterialPageRoute(
+        builder: (_) => EdicaoPedidoExecucaoScreen(pedido: pedido),
+      ),
     );
     await controller.load();
   }
@@ -341,7 +558,9 @@ class _QuadroViewState extends State<_QuadroView> {
     Pedido pedido,
   ) async {
     await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => CancelamentoPedidoScreen(pedido: pedido)),
+      MaterialPageRoute(
+        builder: (_) => CancelamentoPedidoScreen(pedido: pedido),
+      ),
     );
     await controller.load();
   }
@@ -377,11 +596,16 @@ class _KanbanColuna extends StatelessWidget {
   final List<Pedido> pedidos;
   final bool somenteLeitura;
   final QuadroAtendimentoController controller;
-  final Future<void> Function(BuildContext context, Pedido? pedidoExistente) onAbrirCadastroPedido;
-  final Future<void> Function(BuildContext context, Pedido pedido) onAbrirExecucaoPedido;
-  final Future<void> Function(BuildContext context, Pedido pedido) onAbrirEdicaoExecucao;
-  final Future<void> Function(BuildContext context, Pedido pedido) onAbrirCancelamento;
-  final Future<void> Function(BuildContext context, Pedido pedido) onAbrirDevolucao;
+  final Future<void> Function(BuildContext context, Pedido? pedidoExistente)
+  onAbrirCadastroPedido;
+  final Future<void> Function(BuildContext context, Pedido pedido)
+  onAbrirExecucaoPedido;
+  final Future<void> Function(BuildContext context, Pedido pedido)
+  onAbrirEdicaoExecucao;
+  final Future<void> Function(BuildContext context, Pedido pedido)
+  onAbrirCancelamento;
+  final Future<void> Function(BuildContext context, Pedido pedido)
+  onAbrirDevolucao;
 
   @override
   Widget build(BuildContext context) {
@@ -425,23 +649,39 @@ class _KanbanColuna extends StatelessWidget {
                       return PedidoCard(
                         pedido: pedido,
                         somenteLeitura: somenteLeitura,
-                        onExcluir: () => _executar(context, () => controller.excluir(pedido)),
+                        onExcluir: () => _executar(
+                          context,
+                          () => controller.excluir(pedido),
+                        ),
                         onRetirado: () => _executar(
                           context,
-                          () => controller.atualizarStatus(pedido, PedidoStatus.retiradoNoBalcao),
+                          () => controller.atualizarStatus(
+                            pedido,
+                            PedidoStatus.retiradoNoBalcao,
+                          ),
                         ),
                         onEnviado: () => _executar(
                           context,
-                          () => controller.atualizarStatus(pedido, PedidoStatus.enviado),
+                          () => controller.atualizarStatus(
+                            pedido,
+                            PedidoStatus.enviado,
+                          ),
                         ),
                         onEntregue: () => _executar(
                           context,
-                          () => controller.atualizarStatus(pedido, PedidoStatus.entregue),
+                          () => controller.atualizarStatus(
+                            pedido,
+                            PedidoStatus.entregue,
+                          ),
                         ),
-                        onAtendimento: () => onAbrirCadastroPedido(context, pedido),
-                        onEditarCadastro: () => onAbrirCadastroPedido(context, pedido),
-                        onExecutar: () => onAbrirExecucaoPedido(context, pedido),
-                        onEditarExecucao: () => onAbrirEdicaoExecucao(context, pedido),
+                        onAtendimento: () =>
+                            onAbrirCadastroPedido(context, pedido),
+                        onEditarCadastro: () =>
+                            onAbrirCadastroPedido(context, pedido),
+                        onExecutar: () =>
+                            onAbrirExecucaoPedido(context, pedido),
+                        onEditarExecucao: () =>
+                            onAbrirEdicaoExecucao(context, pedido),
                         onCancelar: () => onAbrirCancelamento(context, pedido),
                         onDevolvido: () => onAbrirDevolucao(context, pedido),
                       );
@@ -453,12 +693,16 @@ class _KanbanColuna extends StatelessWidget {
     );
   }
 
-  Future<void> _executar(BuildContext context, Future<void> Function() acao) async {
+  Future<void> _executar(
+    BuildContext context,
+    Future<void> Function() acao,
+  ) async {
     try {
       await acao();
     } on StateError catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.message)));
       }
     }
   }
