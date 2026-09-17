@@ -29,6 +29,7 @@ class _CadastroPedidoScreenState extends State<CadastroPedidoScreen> {
   final _dadosFormKey = GlobalKey<FormState>();
 
   late final TextEditingController _identificadorController;
+  final _identificadorFocusNode = FocusNode();
   final _nomeClienteController = TextEditingController();
   final _enderecoController = TextEditingController();
   final _observacaoController = TextEditingController();
@@ -44,6 +45,12 @@ class _CadastroPedidoScreenState extends State<CadastroPedidoScreen> {
   bool _identificadorConfirmado = false;
   bool _buscando = false;
   bool _salvando = false;
+
+  /// Modo do teclado do campo Identificador: abre numérico por padrão, mas o
+  /// usuário pode alternar para texto completo pelo ícone no campo — em
+  /// vários teclados Android (ex.: Samsung Keyboard) o modo numérico não
+  /// oferece essa alternância nativamente.
+  bool _identificadorTeclaNumerica = true;
 
   @override
   void initState() {
@@ -67,6 +74,7 @@ class _CadastroPedidoScreenState extends State<CadastroPedidoScreen> {
   @override
   void dispose() {
     _identificadorController.dispose();
+    _identificadorFocusNode.dispose();
     _nomeClienteController.dispose();
     _enderecoController.dispose();
     _observacaoController.dispose();
@@ -127,16 +135,32 @@ class _CadastroPedidoScreenState extends State<CadastroPedidoScreen> {
           Expanded(
             child: TextFormField(
               controller: _identificadorController,
-              readOnly: _identificadorConfirmado,
+              focusNode: _identificadorFocusNode,
               autofocus: !_identificadorConfirmado,
+              keyboardType: _identificadorTeclaNumerica
+                  ? TextInputType.number
+                  : TextInputType.text,
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
               textInputAction: TextInputAction.done,
               onFieldSubmitted: (_) {
                 if (!_identificadorConfirmado && !_buscando) {
                   _onConfirmarIdentificador();
                 }
               },
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Identificador do Pedido',
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _identificadorTeclaNumerica ? Icons.abc : Icons.numbers,
+                  ),
+                  tooltip: _identificadorTeclaNumerica
+                      ? 'Mudar teclado para texto'
+                      : 'Mudar teclado para números',
+                  onPressed: _alternarTecladoIdentificador,
+                ),
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
@@ -232,6 +256,18 @@ class _CadastroPedidoScreenState extends State<CadastroPedidoScreen> {
     );
   }
 
+  /// Alterna o `keyboardType` do campo Identificador entre numérico e texto.
+  /// Fecha e reabre o foco para forçar o Android a recarregar o teclado
+  /// virtual já no novo modo (só trocar o `keyboardType` com o campo focado
+  /// nem sempre atualiza o teclado já aberto).
+  void _alternarTecladoIdentificador() {
+    setState(() => _identificadorTeclaNumerica = !_identificadorTeclaNumerica);
+    _identificadorFocusNode.unfocus();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _identificadorFocusNode.requestFocus();
+    });
+  }
+
   /// Busca o Pedido mais recente (qualquer fluxo) com este identificador e
   /// usa seus dados de Cadastro como molde — Observação não é copiada.
   /// Sempre resulta na criação de um Pedido novo (Passo 18): `_pedidoBase`
@@ -262,7 +298,12 @@ class _CadastroPedidoScreenState extends State<CadastroPedidoScreen> {
   }
 
   Future<void> _onGravar() async {
-    if (!_dadosFormKey.currentState!.validate()) return;
+    // Duas `Form`s distintas (Passo 45 manteve o Identificador editável a
+    // qualquer momento, fora da `_dadosFormKey`) — validar as duas sem
+    // short-circuit, para exibir os erros de ambas de uma vez.
+    final identificadorValido = _identificadorFormKey.currentState!.validate();
+    final dadosValidos = _dadosFormKey.currentState!.validate();
+    if (!identificadorValido || !dadosValidos) return;
 
     setState(() => _salvando = true);
 

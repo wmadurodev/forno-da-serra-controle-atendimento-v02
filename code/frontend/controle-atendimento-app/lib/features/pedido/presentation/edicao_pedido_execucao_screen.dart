@@ -24,6 +24,8 @@ class EdicaoPedidoExecucaoScreen extends StatefulWidget {
 class _EdicaoPedidoExecucaoScreenState
     extends State<EdicaoPedidoExecucaoScreen> {
   final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _identificadorController;
+  final _identificadorFocusNode = FocusNode();
   late final TextEditingController _nomeClienteController;
   late final TextEditingController _enderecoController;
   late final TextEditingController _observacaoController;
@@ -36,10 +38,19 @@ class _EdicaoPedidoExecucaoScreenState
   File? _novaFoto;
   bool _salvando = false;
 
+  /// Modo do teclado do campo Identificador: abre numérico por padrão, mas o
+  /// usuário pode alternar para texto completo pelo ícone no campo — em
+  /// vários teclados Android (ex.: Samsung Keyboard) o modo numérico não
+  /// oferece essa alternância nativamente.
+  bool _identificadorTeclaNumerica = true;
+
   @override
   void initState() {
     super.initState();
     final pedido = widget.pedido;
+    _identificadorController = TextEditingController(
+      text: pedido.identificador,
+    );
     _nomeClienteController = TextEditingController(
       text: pedido.nomeCliente ?? '',
     );
@@ -62,6 +73,8 @@ class _EdicaoPedidoExecucaoScreenState
 
   @override
   void dispose() {
+    _identificadorController.dispose();
+    _identificadorFocusNode.dispose();
     _nomeClienteController.dispose();
     _enderecoController.dispose();
     _observacaoController.dispose();
@@ -84,11 +97,28 @@ class _EdicaoPedidoExecucaoScreenState
           child: ListView(
             children: [
               TextFormField(
-                initialValue: widget.pedido.identificador,
-                readOnly: true,
-                decoration: const InputDecoration(
-                  labelText: 'Identificador do Pedido',
+                controller: _identificadorController,
+                focusNode: _identificadorFocusNode,
+                keyboardType: _identificadorTeclaNumerica
+                    ? TextInputType.number
+                    : TextInputType.text,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
                 ),
+                decoration: InputDecoration(
+                  labelText: 'Identificador do Pedido',
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _identificadorTeclaNumerica ? Icons.abc : Icons.numbers,
+                    ),
+                    tooltip: _identificadorTeclaNumerica
+                        ? 'Mudar teclado para texto'
+                        : 'Mudar teclado para números',
+                    onPressed: _alternarTecladoIdentificador,
+                  ),
+                ),
+                validator: _obrigatorio,
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -241,6 +271,18 @@ class _EdicaoPedidoExecucaoScreenState
     return null;
   }
 
+  /// Alterna o `keyboardType` do campo Identificador entre numérico e texto.
+  /// Fecha e reabre o foco para forçar o Android a recarregar o teclado
+  /// virtual já no novo modo (só trocar o `keyboardType` com o campo focado
+  /// nem sempre atualiza o teclado já aberto).
+  void _alternarTecladoIdentificador() {
+    setState(() => _identificadorTeclaNumerica = !_identificadorTeclaNumerica);
+    _identificadorFocusNode.unfocus();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _identificadorFocusNode.requestFocus();
+    });
+  }
+
   Future<void> _onTirarFoto() async {
     final imagem = await ImagePicker().pickImage(source: ImageSource.camera);
     if (imagem == null) return;
@@ -271,7 +313,7 @@ class _EdicaoPedidoExecucaoScreenState
 
     final pedido = Pedido(
       id: widget.pedido.id,
-      identificador: widget.pedido.identificador,
+      identificador: _identificadorController.text.trim(),
       fluxoAtendimentoId: widget.pedido.fluxoAtendimentoId,
       status: widget.pedido.status,
       cancelado: widget.pedido.cancelado,
